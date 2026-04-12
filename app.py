@@ -1,21 +1,21 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
-Version 2.9 — Final Sidebar Logo + Clean Fixed-Bottom Chat UI
+Version 3.0 — Final Production Polish (Remove API Key + Model Selector + Light Dropdowns)
 
-Changes from v2.8:
-  - CSS Layer 1 v2.9: adds [data-testid="stSidebar"] { background:#FFFFFF }
-    plus explicit heading/paragraph overrides for the sidebar logo block;
-    button spec (#F8FAFC / #1F2937 border+text) and all dark-text rules retained
-  - Sidebar brand block: replaced dark-blue background with light (#F8FAFC)
-    border (#1F2937) block so logo matches the overall button/sidebar spec
-  - Home chat render order fixed: assistant streaming block now runs BEFORE
-    st.chat_input() in code order, ensuring the reply always appears in the
-    scrollable history area above the fixed-bottom input box, never below it
-  - No duplicate user bubble: user message is written to session state and the
-    page reruns; the history loop renders it once; the response block only opens
-    an assistant chat_message container
-  - All v2.8 features fully preserved (PDF bytearray fix, assignor notes
-    bullets, concise pre-game, quiz variety, film/RefGrade, etc.)
+Changes from v2.9:
+  - CSS v3.0: adds .stSelectbox/.stMultiSelect light bg (#F8FAFC), black border
+    (#1F2937), black text — fixes dark-on-dark dropdown issue throughout the app
+  - API key removed from UI: app reads ANTHROPIC_API_KEY from st.secrets only;
+    make_client() accepts both flat key and [anthropic] nested table formats;
+    clear st.error + st.stop() if secret is missing
+  - Model selector removed: MODEL = "claude-sonnet-4-6" hard-coded constant used
+    in every API call (stream_chat, call_api_sync, stream_vision, quiz generators)
+  - Sidebar cleaned up: no API key input, no model dropdown; shows pill badge
+    "✅ claude-sonnet-4-6" + secrets caption instead
+  - api_key_ok() simplified to always return True (secret handled at client level)
+  - All quiz/Assignor Hub/Film/RefGrade api_key_ok() gates cleaned up
+  - All v2.9 features fully preserved (PDF bytes fix, assignor notes bullets,
+    concise pre-game, fixed-bottom chat, quiz variety, film/RefGrade, etc.)
 
 Tabs: 🏈 Home | 🎬 Game Film | 📊 RefGrade | 👥 Assignor Hub | 📝 Quiz & Drills
 Run:  streamlit run app_v2.py
@@ -558,10 +558,10 @@ _SVG = (
 )
 BG_URL = "data:image/svg+xml," + urllib.parse.quote(_SVG)
 
-# ── Layer 1: v2.9 MANDATORY button + sidebar logo + dark text ────────────────
+# ── Layer 1: v3.0 MANDATORY button + selectbox + sidebar + dark text ─────────
 st.markdown("""
 <style>
-    /* v2.9 MANDATORY: light bg, black border, black text on ALL buttons */
+    /* v3.0: light bg, black border, black text on ALL buttons */
     .stButton button, button, .stButton>button {
         color: #1F2937 !important;
         background-color: #F8FAFC !important;
@@ -574,35 +574,39 @@ st.markdown("""
         color: #94A3B8 !important;
         border-color: #94A3B8 !important;
     }
-    /* Sidebar — white background, all text dark */
-    [data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
+    /* v3.0: selectbox + multiselect — light bg, black border, black text */
+    .stSelectbox > div, .stMultiSelect > div,
+    .stSelectbox > div > div, .stMultiSelect > div > div {
+        color: #1F2937 !important;
+        background-color: #F8FAFC !important;
+        border: 2px solid #1F2937 !important;
     }
+    .stSelectbox label, .stMultiSelect label,
+    [data-baseweb="select"] span, [data-baseweb="select"] div,
+    [data-baseweb="popover"] li, [data-baseweb="menu"] li {
+        color: #1F2937 !important;
+        background-color: #F8FAFC !important;
+    }
+    /* Sidebar — white background, all text dark */
+    [data-testid="stSidebar"] { background-color: #FFFFFF !important; }
     [data-testid="stSidebar"] .stMarkdown,
     [data-testid="stSidebar"] label,
     [data-testid="stSidebar"] .stSelectbox,
-    [data-testid="stSidebar"] .stTextInput {
-        color: #1F2937 !important;
-    }
-    /* Sidebar logo / header headings & paragraphs */
+    [data-testid="stSidebar"] .stTextInput,
     [data-testid="stSidebar"] .stMarkdown h1,
     [data-testid="stSidebar"] .stMarkdown h2,
     [data-testid="stSidebar"] .stMarkdown p,
     [data-testid="stSidebar"] p,
     [data-testid="stSidebar"] span,
-    [data-testid="stSidebar"] div {
-        color: #1F2937 !important;
-    }
+    [data-testid="stSidebar"] div { color: #1F2937 !important; }
     [data-testid="stSidebar"] [data-baseweb="select"] > div,
     [data-testid="stSidebar"] [data-baseweb="select"] span {
-        color: #1F2937 !important;
-        background-color: #F8FAFC !important;
+        color: #1F2937 !important; background-color: #F8FAFC !important;
     }
     /* Tab labels */
     .stTabs [data-baseweb="tab"] { color: #1F2937 !important; }
     .stTabs [aria-selected="true"] {
-        color: #003087 !important;
-        border-bottom: 3px solid #003087 !important;
+        color: #003087 !important; border-bottom: 3px solid #003087 !important;
     }
     /* Dark text everywhere on the light theme */
     .stMarkdown, .stMarkdown p, .stMarkdown li, .stMarkdown h1,
@@ -850,8 +854,6 @@ def _s(k, v):
     if k not in st.session_state:
         st.session_state[k] = v
 
-_s("api_key", "")
-_s("model", "claude-opus-4-6")
 _s("messages", [])
 _s("uploaded_files_content", [])
 
@@ -900,12 +902,6 @@ _s("tenq_answered_this", False)
 _s("tenq_user_answer", None)
 _s("quiz_log", [])
 
-if not st.session_state.api_key:
-    try:
-        st.session_state.api_key = st.secrets.get("ANTHROPIC_API_KEY", "")
-    except Exception:
-        pass
-
 
 # =============================================================================
 # HELPERS — Core
@@ -914,15 +910,45 @@ if not st.session_state.api_key:
 def b64(data: bytes) -> str:
     return base64.standard_b64encode(data).decode("utf-8")
 
+# v3.0: model hard-coded to Sonnet — fast, cost-efficient, no user selector needed
+MODEL = "claude-sonnet-4-6"
+
 def make_client():
-    return anthropic.Anthropic(api_key=st.session_state.api_key)
+    """
+    Create Anthropic client from Streamlit secrets.
+    Secrets format accepted (either works):
+      [ANTHROPIC_API_KEY = "sk-ant-..."]   ← flat key in secrets.toml
+      [anthropic]                           ← nested table
+      api_key = "sk-ant-..."
+    """
+    key = None
+    try:
+        key = st.secrets["ANTHROPIC_API_KEY"]
+    except (KeyError, AttributeError):
+        pass
+    if not key:
+        try:
+            key = st.secrets["anthropic"]["api_key"]
+        except (KeyError, AttributeError):
+            pass
+    if not key:
+        st.error(
+            "❌ **ANTHROPIC_API_KEY not found in secrets.**\n\n"
+            "Add it to `.streamlit/secrets.toml`:\n```\n"
+            'ANTHROPIC_API_KEY = "sk-ant-..."\n```\n'
+            "Or set it in the Streamlit Cloud dashboard under **Settings → Secrets**."
+        )
+        st.stop()
+    return anthropic.Anthropic(api_key=key)
 
 def api_key_ok() -> bool:
-    return bool(st.session_state.api_key) and st.session_state.api_key.startswith("sk-ant-")
+    """v3.0: key comes from secrets — always considered OK at runtime.
+    If the secret is missing, make_client() will st.stop() with a clear error."""
+    return True
 
 def handle_api_error(e: Exception) -> str:
     if isinstance(e, anthropic.AuthenticationError):
-        return "❌ Authentication failed. Check your API key in the sidebar."
+        return "❌ Authentication failed. Check ANTHROPIC_API_KEY in Streamlit secrets."
     if isinstance(e, anthropic.RateLimitError):
         return "⚠️ Rate limit reached. Wait a moment and try again."
     if isinstance(e, anthropic.APIConnectionError):
@@ -960,7 +986,7 @@ def stream_chat(client, messages, files, system=None):
         else:
             api_msgs.append({"role": m["role"], "content": m["content"]})
     with client.messages.stream(
-        model=st.session_state.model, max_tokens=4096,
+        model=MODEL, max_tokens=4096,
         system=sys_p, messages=api_msgs, temperature=0,
     ) as s:
         yield from s.text_stream
@@ -968,7 +994,7 @@ def stream_chat(client, messages, files, system=None):
 def call_api_sync(prompt: str, system: str, max_tokens: int = 3000) -> str:
     client = make_client()
     resp = client.messages.create(
-        model=st.session_state.model, max_tokens=max_tokens,
+        model=MODEL, max_tokens=max_tokens,
         system=system, messages=[{"role": "user", "content": prompt}], temperature=0,
     )
     return resp.content[0].text
@@ -976,7 +1002,7 @@ def call_api_sync(prompt: str, system: str, max_tokens: int = 3000) -> str:
 def chat_log_json() -> str:
     return json.dumps({
         "exported_at": datetime.datetime.now().isoformat(),
-        "model": st.session_state.model,
+        "model": MODEL,
         "messages": [{"role": m["role"], "content": m["content"],
                        "timestamp": m.get("timestamp", "")}
                      for m in st.session_state.messages],
@@ -1042,7 +1068,7 @@ def build_vision_content(frames_b64, start_idx, end_idx, user_question,
 
 def stream_vision(client, content_blocks, system):
     with client.messages.stream(
-        model=st.session_state.model, max_tokens=4096, system=system,
+        model=MODEL, max_tokens=4096, system=system,
         messages=[{"role": "user", "content": content_blocks}], temperature=0,
     ) as s:
         yield from s.text_stream
@@ -1094,7 +1120,7 @@ def generate_single_question(topic: str, used_topics: list = None) -> dict | Non
     try:
         client = make_client()
         resp = client.messages.create(
-            model=st.session_state.model, max_tokens=900,
+            model=MODEL, max_tokens=900,
             system=QUIZ_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
@@ -1127,7 +1153,7 @@ def generate_ten_questions(topic: str) -> list | None:
     try:
         client = make_client()
         resp = client.messages.create(
-            model=st.session_state.model, max_tokens=6000,
+            model=MODEL, max_tokens=6000,
             system=QUIZ_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
@@ -1488,7 +1514,7 @@ def markdown_to_docx_bytes(md_text: str, title: str = "RefBuddy Report") -> byte
 # =============================================================================
 
 with st.sidebar:
-    # v2.9: light bg with dark text — consistent with button/sidebar spec
+    # v3.0: light bg brand block
     st.markdown(
         '<div style="background:#F8FAFC;border:2px solid #1F2937;border-radius:8px;'
         'padding:0.7rem 1rem;margin-bottom:0.8rem;">'
@@ -1498,29 +1524,12 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    st.markdown("**Anthropic API Key**")
-    key_in = st.text_input("apikey", value=st.session_state.api_key,
-                            type="password", placeholder="sk-ant-...",
-                            label_visibility="collapsed", key="api_key_input")
-    if key_in != st.session_state.api_key:
-        st.session_state.api_key = key_in
-    if st.session_state.api_key:
-        if st.session_state.api_key.startswith("sk-ant-"):
-            st.markdown('<span class="pill-ok">✅ API Key OK</span>', unsafe_allow_html=True)
-        else:
-            st.markdown('<span class="pill-warn">⚠️ Invalid format</span>', unsafe_allow_html=True)
-    else:
-        st.markdown('<span class="pill-err">No API Key</span>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("**Model**")
-    model_map = {
-        "claude-opus-4-6 (Best)": "claude-opus-4-6",
-        "claude-sonnet-4-6 (Fast / ~80% cheaper)": "claude-sonnet-4-6",
-    }
-    st.session_state.model = model_map[
-        st.selectbox("mdl", list(model_map.keys()), label_visibility="collapsed")
-    ]
+    # v3.0: API key comes from secrets — no user input needed
+    st.markdown(
+        '<span class="pill-ok">✅ claude-sonnet-4-6</span>',
+        unsafe_allow_html=True,
+    )
+    st.caption("Powered by Anthropic · secrets.toml")
 
     st.markdown("---")
     st.markdown("**Knowledge Base**")
@@ -1666,7 +1675,6 @@ with tab_home:
     # ── Single chat input — Streamlit pins this to the bottom of the viewport ─
     user_in = st.chat_input(
         "Ask anything about NFHS/MSHSL rules, game situations, or your notes…",
-        disabled=not st.session_state.api_key,
     )
     if user_in:
         st.session_state.messages.append({
@@ -1682,7 +1690,7 @@ with tab_home:
             st.markdown(f"""<div class="ref-log">
             <strong>Session Stats</strong><br>
             Messages: {len(st.session_state.messages)} &nbsp;|&nbsp;
-            Model: {st.session_state.model}<br>
+            Model: {MODEL}<br>
             Started: {st.session_state.messages[0].get("timestamp","")[:19]}<br>
             Last: {st.session_state.messages[-1].get("timestamp","")[:19]}
             </div>""", unsafe_allow_html=True)
@@ -2017,8 +2025,6 @@ with tab_ah:
     st.markdown("Film-based crew and individual official evaluations, plus auto-generated "
                 "pre-game meeting agendas with PDF and Word export.")
 
-    if not api_key_ok():
-        st.warning("⚠️ Enter your Anthropic API key in the sidebar to use the Assignor Hub.")
 
     # ── Three sub-tab selector ────────────────────────────────────────────────
     sub_c1, sub_c2, sub_c3 = st.columns(3)
@@ -2517,9 +2523,6 @@ with tab_quiz:
                 "positioning, and signals. Questions are generated from your full CORE_KNOWLEDGE "
                 "with a 50/50 mix of multiple-choice and true/false.")
 
-    if not api_key_ok():
-        st.warning("⚠️ Enter your Anthropic API key in the sidebar to use Quiz & Drills.")
-        st.stop()
 
     # ── MODE SELECTOR ─────────────────────────────────────────────────────────
     st.markdown("### Choose Your Mode")
@@ -2843,7 +2846,7 @@ with tab_quiz:
 st.markdown(f"""
 <div class="rb-footer">
     Built for referees, by a referee 🏈 &nbsp;|&nbsp;
-    RefBuddy v2.9 &nbsp;|&nbsp; MN HS Football · Film · RefGrade · Assignor Hub · Quiz<br>
+    RefBuddy v3.0 &nbsp;|&nbsp; MN HS Football · Film · RefGrade · Assignor Hub · Quiz<br>
     <span style="font-size:0.72rem;">
     Always confirm rulings with your MSHSL assignor. Not official MSHSL interpretation.
     </span>
