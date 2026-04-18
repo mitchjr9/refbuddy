@@ -1,21 +1,21 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
-Version 3.0 — Final Production Polish (Remove API Key + Model Selector + Light Dropdowns)
+Version 3.1 — Hybrid CORE_KNOWLEDGE: 2021 Rulebook + 2022-2026 Changes
 
-Changes from v2.9:
-  - CSS v3.0: adds .stSelectbox/.stMultiSelect light bg (#F8FAFC), black border
-    (#1F2937), black text — fixes dark-on-dark dropdown issue throughout the app
-  - API key removed from UI: app reads ANTHROPIC_API_KEY from st.secrets only;
-    make_client() accepts both flat key and [anthropic] nested table formats;
-    clear st.error + st.stop() if secret is missing
-  - Model selector removed: MODEL = "claude-sonnet-4-6" hard-coded constant used
-    in every API call (stream_chat, call_api_sync, stream_vision, quiz generators)
-  - Sidebar cleaned up: no API key input, no model dropdown; shows pill badge
-    "✅ claude-sonnet-4-6" + secrets caption instead
-  - api_key_ok() simplified to always return True (secret handled at client level)
-  - All quiz/Assignor Hub/Film/RefGrade api_key_ok() gates cleaned up
-  - All v2.9 features fully preserved (PDF bytes fix, assignor notes bullets,
-    concise pre-game, fixed-bottom chat, quiz variety, film/RefGrade, etc.)
+Changes from v3.0:
+  - CORE_KNOWLEDGE rebuilt with new Section 0 "2022-2026 NFHS Rules Changes"
+    at the top, containing all official changes from every project document:
+    2022-2024_rulechanges_POE_Football.md, 2024nfhsfootballruleschangefinaljune2024.pdf,
+    2025 FB Rules Changesfinalapril2025.pdf, 2025 NFHS POE (FINAL 2/18/25),
+    2026_NFHS_Football_Rules_and_Editorial_Changes (2/18/26)
+  - Each change includes: rule number, year, old language, new language, why it matters
+  - Quick-reference table listing every changed rule from 2021 baseline
+  - SYSTEM_PROMPT updated with CRITICAL LAYERING RULE: default to 2021 rulebook
+    unless Section 0 overrides it; cite the year when a change applies
+  - Intentional grounding 2022/2023 two-step change fully documented
+  - Defenseless player 2023 expansion documented
+  - Forward fumble OOB 2025 rule fully documented with beanbag note
+  - All v3.0 features (secrets-only API key, hard-coded Sonnet, light dropdowns) preserved
 
 Tabs: 🏈 Home | 🎬 Game Film | 📊 RefGrade | 👥 Assignor Hub | 📝 Quiz & Drills
 Run:  streamlit run app_v2.py
@@ -57,6 +57,169 @@ except ImportError:
 CORE_KNOWLEDGE = """
 # RefBuddy Core Knowledge Base
 ## Minnesota High School Football — Referee Reference
+
+---
+
+## 0. 2022–2026 NFHS RULES CHANGES & UPDATES
+
+> **INSTRUCTION FOR ALL RESPONSES:** Default to the 2021 NFHS Rulebook (Sections 1–8 below) for any question unless a specific update in THIS section overrides it. Always cite the year when a change applies. If a rule changed in 2022 and then was further clarified in 2023, note both years.
+
+---
+
+### 2022 Rule Changes
+
+**[2022] Jersey Number "0" Legalized — Rule 1-4-3**
+- **Old:** Numbers 1–99 only.
+- **New:** Players may now wear the number 0.
+- **Why it matters:** Squad number assignments and ineligible receiver detection — #0 is treated as eligible (1–49 or 80–99 range does not include 0, so #0 IS eligible by position unless declared ineligible). Confirm with your state interpreter; MSHSL has adopted this.
+
+**[2022] Chop Block Redefined — Rule 2-3-8**
+- **Old:** A chop block was defined as a block at or below the knees of an opponent being blocked above the waist by a teammate.
+- **New:** A chop block is a combination block by two or more offensive teammates against the same opponent (not the runner) where at least one block is above the waist and at least one is below the waist.
+- **Why it matters:** Broader definition — any high-low combination on the same non-runner defender is now a chop block. 15-yard penalty. Look for OL double-teaming with cut blocks on defensive linemen.
+
+**[2022] Intentional Grounding — Outside-Pocket Exception Added — Rule 7-5-2**
+- **Old (2021):** Intentional grounding required an eligible receiver in the area of the pass. No pocket exception existed in NFHS (unlike NCAA).
+- **New (2022):** A passer who is outside the tackle box (outside the normal tackle position on either side) may legally throw an incomplete forward pass that reaches the line of scrimmage without an eligible receiver in the area — NO foul.
+- **Why it matters:** MAJOR change aligning NFHS closer to NCAA on scrambling QBs. If the QB rolls out past the tackle position AND the ball reaches the neutral zone, it is NOT intentional grounding even with no receiver in the area. The 2021 rulebook has NO pocket exception — apply 2022 rule instead.
+- **Penalty if foul still committed:** 5 yards from spot of pass + loss of down.
+
+**[2022] Ball Change Authority Expanded — Rule 1-3-3**
+- **Old:** Only the referee could order a ball change between downs.
+- **New:** Any game official may order a ball change.
+- **Why it matters:** Crew efficiency — wing officials and BJ can now act on a damaged or unfit ball without flagging the referee.
+
+**[2022] Game Clock Start Option After Fouls (Last 2 Minutes) — Rule 3-4-7**
+- **Old:** No specific option for offended team regarding clock start after accepting a penalty in the final 2 minutes.
+- **New:** In the last two minutes of either half, when a foul is accepted, the offended team may choose to have the game clock start on the snap (rather than on the ready signal).
+- **Why it matters:** Significant clock-management tool for trailing teams. If defense commits a foul with <2:00 left, offense can choose snap-start, which prevents the defense from using the clock stoppage to recover time.
+
+**2022 Points of Emphasis:** Targeting and defenseless player protection; legal uniforms and equipment verification; sportsmanship.
+
+---
+
+### 2023 Rule Changes
+
+**[2023] Intentional Grounding — Snap Receiver Restriction — Rule 7-5-2**
+- **Old (2022):** Any passer outside the pocket could use the neutral-zone exception.
+- **New (2023):** ONLY the player who directly receives the snap (usually the QB) may legally use the outside-pocket exception to throw the ball away. A player who received a handoff or lateral CANNOT use this exception.
+- **Why it matters:** Closes a potential loophole where a receiver who took a lateral behind the LOS could spike the ball. If a running back or wide receiver receives a pitch/lateral and then throws the ball away out of bounds short of the LOS, it IS intentional grounding — 5 yards + loss of down.
+
+**[2023] Defenseless Player Definition Expanded — Rule 2-32-16**
+- **Old (2021):** Defenseless players included passer, receiver attempting catch, returner, runner whose progress is stopped, player on ground, player out of play.
+- **New (2023):** A defender who is in the act of or just completed an interception attempt is now explicitly classified as defenseless. Added language: a player attempting to intercept a pass is as vulnerable as a receiver catching one.
+- **Why it matters:** Hits on defensive backs going for the ball must be evaluated under defenseless-player rules — open-hands contact or wrap-up required. Non-open-hands forceful contact = 15-yard personal foul.
+
+**[2023] Inbounds Re-establishment — Rule 2-29-1**
+- **Old:** General requirement to re-establish inbounds — specific language was ambiguous.
+- **New:** A player who goes out of bounds must re-establish both feet (or one knee/other body part) inbounds before legally touching a forward pass or being the first to touch a kick. One foot is not sufficient after going OOB.
+- **Why it matters:** Receiver who runs out on a route and comes back — if only one foot re-established, any catch is incomplete. Both feet must touch inbounds before the catch.
+
+**[2023] Penalty Enforcement — Previous Spot Clarified — Rules 10-4 and 10-6**
+- **Old:** Enforcement spots for fouls behind the LOS were sometimes inconsistently applied.
+- **New:** Clarified that most fouls occurring behind the line of scrimmage during running plays or loose-ball plays are enforced from the previous spot (not from the spot of the foul).
+- **Why it matters:** Prevents confusion on off-tackle runs where a blocker holds 5 yards behind the LOS — the 10-yard penalty comes from the previous spot, not the spot of the hold, which could otherwise result in a net gain for the offense.
+
+**[2023] Towel Rules Clarified — Rule 1-5-3a**
+- **Old:** Towel rules were less specific regarding color and logo restrictions.
+- **New:** Solid-colored towels are allowed (except brown or penalty-flag yellow/gold colors). Logos and manufacturer's marks are allowed but limited in size. Towels must be tucked into waistband; no flags hanging.
+- **Why it matters:** Equipment check item — any brown or flag-colored towel must be removed before the game. Logo towels are legal as long as they meet size limits.
+
+**[2023] Intentional Pass Interference — No Longer Automatic USC — Rule 7-5 Penalty**
+- **Old:** Intentional pass interference (a defender deliberately fouling to prevent a TD) carried a 15-yard PI penalty PLUS an automatic unsportsmanlike conduct foul (15 yards + possible DQ).
+- **New:** The automatic USC has been removed. Intentional PI is still 15 yards from the previous spot. Officials may still flag USC separately if the conduct warrants it, but it is no longer automatic.
+- **Why it matters:** One less automatic double-foul situation. The foul is still serious — 15-yard PI from previous spot is significant — but DQ is no longer a default outcome.
+
+**2023 Points of Emphasis:** Helping the runner; coach-official communication; game management.
+
+---
+
+### 2024 Rule Changes
+
+**[2024] Home Team Uniform — Same Dark Color Required — Rule 1-5-1b(3)**
+- **Old:** Home team wore dark jerseys, but no specific requirement that all jerseys be the same shade.
+- **New:** The jerseys of the home team shall ALL be the same dark color(s) that clearly contrasts with white. Mixing different dark shades (e.g., half the team in navy, half in royal blue) is a violation.
+- **Why it matters:** Pre-game equipment check — if the home team's jerseys are not all the same color family, notify the head coach before kickoff. This is an equipment violation (Rule 1-5-1), not a uniform number issue.
+
+**[2024] Number Body Color — Single Solid Contrasting Color — Rule 1-5-1b(3)**
+- **Old (through 2023):** Number body could be either a contrasting color OR the same color as the jersey with a contrasting border (two options).
+- **New (effective 2024):** The entire body of the number (horizontal bars and vertical strokes) shall be a SINGLE SOLID COLOR that clearly contrasts with the jersey body color. The dual-color option is gone.
+- **Why it matters:** Jersey number legibility check at equipment inspection.
+
+**2024 Points of Emphasis:** Sportsmanship and altercation prevention; player equipment and enforcement; formations (illegal formations and knee pad compliance).
+
+---
+
+### 2025 Rule Changes
+
+**[2025] Forward Fumble Out of Bounds — Spot of Fumble Rule — Rules 3-4-2d (NEW), 4-3-1 EXCEPTION (NEW), 8-5-2a EXCEPTION**
+- **Old (2021):** When a fumble went out of bounds, the ball was returned to the spot where it crossed the sideline/end line.
+- **New (2025):** When a FORWARD fumble goes out of bounds (or is ruled out of bounds between the goal lines), the ball is returned to the SPOT OF THE FUMBLE — not where it went out of bounds.
+- **Why it matters:** HUGE game-management change. A QB who fumbles at the LOS and the ball rolls 15 yards downfield out of bounds — the offense gets the ball back at the LOS where the fumble occurred, NOT at the 15-yard spot. Use a beanbag to mark the spot of the fumble. Note: this applies to FORWARD fumbles only; backward fumbles still go where they went OOB.
+- **Personal note:** This is a 2025 new rule — the 2021 rulebook language does NOT apply to forward fumbles OOB anymore.
+
+**[2025] Electronic Signs Allowed — Rule 1-5-3c(2)**
+- **Old:** No electronic devices allowed to relay plays from sideline to players.
+- **New:** Fixed electronic signs with play signals (non-audio, non-video) are allowed for relaying plays from the sideline. In-helmet communication is still prohibited. Players may not watch video between plays.
+- **Why it matters:** Many teams now use electronic signaling systems. Legal as long as: no audio, no video feed to players, and no in-helmet communication device.
+
+**[2025] No Audio/Video Recording Devices on Players — Rule 1-5-3c(3) NEW**
+- **Old:** No specific rule against players wearing recording/transmission devices.
+- **New:** No player participating in the game may wear any audio or video device to record or transmit audio or video.
+- **Why it matters:** New equipment violation — any body camera, GoPro, or similar device worn by a player on the field is illegal. Must be removed before participation. Enforce as illegal equipment.
+
+**[2025] Tooth/Mouth Protector Attachment Restrictions — Rule 1-5-1d(5)a (Effective 2026 season)**
+- **New:** Items attached to the tooth and mouth protector that do not serve a protective function or that pose a health/risk issue are not allowed.
+- **Why it matters:** Flavored candy attachments, decorative items on mouthguards = illegal starting 2026.
+
+**2025 Points of Emphasis (Official — Final 2/18/25):**
+1. **Illegal and Improperly Worn Player Equipment** — Illegal = prohibited items (jewelry, tinted visor, non-compliant eyeshade, bands on arm/neck/legs, back pads uncovered, non-conforming towels). Improperly worn = legal equipment not worn as designed (pants not covering knees, mouthguard not in at snap start, shoulder pads not covered by jersey). Player removed for one down for improperly worn equipment. Chronic violations = delay-of-game or USC on head coach.
+2. **Sportsmanship** — Penalize WITHOUT WARNING: gun gestures, throat slashes, rehearsed poses, sexual gestures, dunking ball over crossbar, removing helmet to celebrate/protest, dancing, somersaults/flips, spiking or spinning the ball. Any act intended to taunt, demean, or disrespect an opponent or the game.
+3. **Defenseless Player / Targeting** — A player is defenseless based on their OWN physical position and focus, not another player's action. Contact on a defenseless receiver is limited to: incidental contact while playing the ball, contact initiated with open hands, or a wrap-up tackle attempt. All other forceful contact = 15-yard personal foul. Targeting: takes aim and initiates contact above the shoulders. NOT automatic DQ in NFHS (unlike NCAA). Game officials: when in doubt, throw the flag — be supported in doing so.
+
+---
+
+### 2026 Rule Changes
+
+**[2026] Play Cards on Forearm/Wrist AND Belt — Rule 1-5-3c(9)**
+- **Old:** Play cards allowed on forearm/wrist area only.
+- **New:** Play cards may now also be worn on the belt area of the body.
+- **Why it matters:** Equipment check item — both locations now legal. No penalty for cards worn on the belt.
+
+**[2026] Slap to Head — NEW Personal Foul — Rule 9-4-7 (NEW)**
+- **Old:** No specific rule against using hands to slap an opponent's head (covered under general illegal use of hands provisions).
+- **New:** No player may use hand(s) to slap an opponent's head. This is a new, specific 15-yard personal foul.
+- **Why it matters:** Now a distinct and named foul — not just "illegal use of hands." If you see a player slap an opponent's helmet, it's Rule 9-4-7, 15 yards. Flag it immediately. Does not require twist or pull like facemask — any slap to the head is the foul.
+
+**2026 Points of Emphasis:**
+1. **Flagrant and Unsportsmanlike Fouls** — Consistent enforcement. Flagrant fouls = DQ. No tolerance for taunting or postgame confrontations.
+2. **Helping the Runner** — Pushing/pulling the runner by a teammate is illegal. Watch for OL pulling QB over the pile on short yardage.
+3. **Sideline Management and Control** — Coaches' restricted area enforcement. Team box limits (MSHSL: 15-yard lines). Non-players must stay in the team box.
+4. **Identification of the NFHS Authenticating Mark on Game Balls** — Verify the authenticating mark on all game balls before the game, especially at 9th grade and above (Rule 1-3-1). Balls without the mark are not legal for varsity competition.
+
+---
+
+### Quick-Reference: Rules That CHANGED from 2021 Baseline
+
+| Rule | Year | What Changed |
+|------|------|-------------|
+| 1-4-3 | 2022 | Jersey #0 now legal |
+| 2-3-8 | 2022 | Chop block = any high-low combination on same non-runner |
+| 7-5-2 | 2022 | Outside-pocket exception added to intentional grounding |
+| 7-5-2 | 2023 | Outside-pocket exception limited to snap receiver only |
+| 2-32-16 | 2023 | Defender attempting interception now explicitly defenseless |
+| 2-29-1 | 2023 | Both feet must re-establish inbounds (not one foot) |
+| 1-5-3a | 2023 | Towel color/logo rules clarified |
+| 7-5 PENALTY | 2023 | Intentional PI no longer carries automatic USC |
+| 1-5-1b(3) | 2024 | Home team jerseys all must be same dark color |
+| 1-5-1b(3) | 2024 | Number body must be single solid contrasting color |
+| 3-4-2d | 2025 | Forward fumble OOB returns to spot of fumble (not OOB spot) |
+| 1-5-3c(2) | 2025 | Electronic play signs (non-audio/video) allowed |
+| 1-5-3c(3) | 2025 | No audio/video recording devices on players |
+| 1-5-3c(9) | 2026 | Play cards now allowed on belt area in addition to wrist |
+| 9-4-7 | 2026 | Slap to opponent's head = new 15-yard personal foul |
+
+---
 
 ---
 
@@ -295,13 +458,13 @@ CORE_KNOWLEDGE = """
 
 ---
 
-## 7. 2025 AND 2026 RULES CHANGES
+## 7. 2025 AND 2026 RULES CHANGES (SUMMARY — see Section 0 above for full detail)
 
 **2025**: Forward fumble OOB = SPOT OF FUMBLE [3-4-2d NEW]. Electronic signs allowed [1-5-3c(2)]. No audio/video devices on players [1-5-3c(3)]. POE: Equipment; Sportsmanship; Defenseless/targeting.
 
 **2026**: Play cards on forearm/wrist AND belt [1-5-3c(9)]. Slap to head = 15 yards [9-4-7 NEW]. POE: Flagrant/USC fouls; Helping the runner; Sideline management; NFHS Authenticating Mark on balls.
 
-**Key NFHS vs. NCAA**: 12 players: NFHS 15yds vs NCAA 5yds. Touchback: NFHS 20yd vs NCAA 25yd. Fair catch: NFHS may kick or snap vs NCAA must snap. Targeting: NFHS not auto-DQ vs NCAA auto-DQ. OT: NFHS B-10 vs NCAA B-25. Intentional grounding: NFHS no pocket rule vs NCAA outside pocket legal. K free kick line: NFHS 40yd vs NCAA 35yd. Pop-up kick: NFHS illegal vs NCAA legal.
+**Key NFHS vs. NCAA**: 12 players: NFHS 15yds vs NCAA 5yds. Touchback: NFHS 20yd vs NCAA 25yd. Fair catch: NFHS may kick or snap vs NCAA must snap. Targeting: NFHS not auto-DQ vs NCAA auto-DQ. OT: NFHS B-10 vs NCAA B-25. Intentional grounding: NFHS outside-pocket exception (snap receiver only, ball reaches LOS) vs NCAA outside pocket legal for any passer. K free kick line: NFHS 40yd vs NCAA 35yd. Pop-up kick: NFHS illegal vs NCAA legal.
 
 ---
 
@@ -321,8 +484,14 @@ Holding: 10 yds. Illegal use of hands: 10 yds. Block in back: 10 yds (15 below w
 
 SYSTEM_PROMPT = f"""You are RefBuddy, a straightforward, hyper-precise Minnesota high school football referee assistant. You ONLY reference the uploaded documents and the core knowledge base below. Cite page/rule number every time. Never hallucinate MSHSL or NFHS mechanics. Always ask clarifying questions on game context before ruling.
 
+CRITICAL LAYERING RULE: The CORE_KNOWLEDGE contains a 2021 NFHS Rulebook baseline (Sections 1–8) plus a 2022–2026 changes section (Section 0) at the top.
+- DEFAULT to the 2021 rulebook for any rule not listed in Section 0.
+- If Section 0 contains a change for that rule, APPLY the updated rule and cite the year: e.g., "[2022 change]" or "[2025 change — overrides 2021 Rule X-X-X]".
+- If a rule was changed multiple times (e.g., intentional grounding: 2022 then 2023), apply the MOST RECENT version and note the history.
+- Never cite 2021 language when a later update has superseded it.
+
 Your behavior:
-1. Start EVERY response with the most relevant rule citation (e.g., "Rule 9-4-3m" or "MSHSL Modification D").
+1. Start EVERY response with the most relevant rule citation (e.g., "Rule 9-4-3m" or "MSHSL Modification D") and include the year if the rule changed after 2021.
 2. Reference personal game notes when applicable.
 3. End EVERY response with: "*Not official MSHSL interpretation — confirm with your assignor.*"
 4. Temperature = 0 mindset: maximum precision, no guessing, no hallucinating.
@@ -2846,7 +3015,7 @@ with tab_quiz:
 st.markdown(f"""
 <div class="rb-footer">
     Built for referees, by a referee 🏈 &nbsp;|&nbsp;
-    RefBuddy v3.0 &nbsp;|&nbsp; MN HS Football · Film · RefGrade · Assignor Hub · Quiz<br>
+    RefBuddy v3.1 &nbsp;|&nbsp; MN HS Football · 2021 Rules + 2022-2026 Updates · Film · Quiz<br>
     <span style="font-size:0.72rem;">
     Always confirm rulings with your MSHSL assignor. Not official MSHSL interpretation.
     </span>
