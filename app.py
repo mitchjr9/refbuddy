@@ -975,9 +975,18 @@ html, body, [data-testid="stAppViewContainer"] {{
     border-left: 4px solid {BLUE}; border-radius: 0 8px 8px 0;
     padding: 0.9rem 1.1rem; font-size: 0.88rem; color: {TEXT};
 }}
-#MainMenu {{ visibility: hidden; }}
+#MainMenu {{ display: none !important; }}
+[data-testid="stMainMenu"] {{ display: none !important; }}
 footer {{ visibility: hidden; }}
-header {{ visibility: hidden; }}
+/* Transparent header — blends with cream page background, no black bar,
+   but the header element itself stays in the DOM so the sidebar
+   collapse/expand chevron remains visible and clickable. */
+[data-testid="stHeader"] {{ background: transparent !important; }}
+/* Hide the Deploy button and its container */
+[data-testid="stAppDeployButton"], .stAppDeployButton {{ display: none !important; }}
+/* Keep only the Share button — hide every sibling after the first one in the
+   toolbar actions area (GitHub source, fork/star, and kebab icons). */
+[data-testid="stToolbarActions"] > *:nth-child(n+2) {{ display: none !important; }}
 [data-testid="stSlider"] .st-by {{ background: {BLUE} !important; }}
 [data-baseweb="select"] {{ background-color: {CARD} !important; }}
 .stAlert {{ border-radius: 8px !important; font-size: 0.88rem !important; }}
@@ -1695,16 +1704,14 @@ with st.sidebar:
 
     # v3.0: API key comes from secrets — no user input needed
     st.markdown(
-        '<span class="pill-ok">✅ claude-sonnet-4-6</span>',
+        '<span class="pill-ok">✅ claude-sonnet</span>',
         unsafe_allow_html=True,
     )
-    st.caption("Powered by Anthropic · secrets.toml")
+    st.caption("Powered by Anthropic")
 
     st.markdown("---")
     st.markdown("**Knowledge Base**")
-    kb_w = len(CORE_KNOWLEDGE.split())
-    st.markdown(f'<span class="pill-ok">✅ Loaded — ~{kb_w:,} words</span>', unsafe_allow_html=True)
-    st.caption("NFHS Rules · MSHSL Mods · Mechanics · 4 seasons of notes")
+    st.caption("NFHS Rulebook | MSHSL Modifications | Multiple years of game notes from veteran varsity officials")
 
     st.markdown("---")
     st.markdown("**Upload Files** *(Home chat)*")
@@ -3014,8 +3021,9 @@ with tab_quiz:
 
 st.markdown(f"""
 <div class="rb-footer">
-    Built for referees, by a referee 🏈 &nbsp;|&nbsp;
-    RefBuddy v3.1 &nbsp;|&nbsp; MN HS Football · 2021 Rules + 2022-2026 Updates · Film · Quiz<br>
+    Built for refs, by a ref 🏈 &nbsp;|&nbsp;
+    RefBuddy v1.0 &nbsp;|&nbsp; MN HS Football &nbsp;|&nbsp;
+    NFHS Rulebook &nbsp;|&nbsp; MSHSL Modifications &nbsp;|&nbsp; Multiple years of game notes from veteran varsity officials<br>
     <span style="font-size:0.72rem;">
     Always confirm rulings with your MSHSL assignor. Not official MSHSL interpretation.
     </span>
