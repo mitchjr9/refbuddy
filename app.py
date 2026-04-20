@@ -1745,15 +1745,6 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-    st.markdown("---")
-    st.markdown(
-        f'<div style="font-size:0.76rem;color:{MUTED};line-height:2.1;">'
-        '🟢 Legal &nbsp; 🔴 Penalty &nbsp; 📏 Measure<br>'
-        '🚩 Flag &nbsp; 🎬 Frame &nbsp; 📊 Grade &nbsp; 📝 Quiz'
-        '</div>', unsafe_allow_html=True,
-    )
-
-
 # =============================================================================
 # TABS
 # =============================================================================
@@ -3021,7 +3012,7 @@ with tab_quiz:
 
 st.markdown(f"""
 <div class="rb-footer">
-    Built for refs, by a ref 🏈 &nbsp;|&nbsp;
+    Built by a ref for refs 🏈 &nbsp;|&nbsp;
     RefBuddy v1.0 &nbsp;|&nbsp; MN HS Football &nbsp;|&nbsp;
     NFHS Rulebook &nbsp;|&nbsp; MSHSL Modifications &nbsp;|&nbsp; Multiple years of game notes from veteran varsity officials<br>
     <span style="font-size:0.72rem;">
