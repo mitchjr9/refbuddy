@@ -1,6 +1,26 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
-Version 3.4 — Secrets Resolution Fix (env vars) + Fail-Closed Auth
+Version 3.5 — Film & Grade Merge + Photo Upload + Claude Branding
+
+Changes from v3.4:
+  - TABS 5 → 4: Game Film and RefGrade merged into a single "🎬 Film & Grade"
+    tab. One upload feeds two modes (Ask a Question / RefGrade Evaluation),
+    removing the confusion of two similar-looking film tabs.
+  - PHOTO UPLOAD: the uploader now accepts jpg/jpeg/png alongside mp4/mov.
+    image_to_frame_b64() converts stills into the same base64-JPEG format
+    extract_frames() produces, so photos and video frames share one pipeline.
+    Photos are now the primary path — video uploads are unreliable on phone
+    data and large clips often fail.
+  - BRANDING: sidebar now shows the "Powered by" + Claude logo lockup
+    (Claude.png, loaded via _asset_data_uri with a text fallback if missing),
+    replacing the model pill and "Powered by Anthropic" caption.
+  - COPY: "Built by a ref, for refs" (comma added, all four locations).
+    Knowledge Base line and footer reworded to "Years of NFHS veteran
+    officials' game notes and NFHS/MSHSL rulebook facts and interpretations"
+    — de-risks the earlier phrasing that implied reproducing the rulebooks.
+    Footer disclaimer now says "Not official NFHS/MSHSL interpretation."
+
+Prior — Version 3.4 — Secrets Resolution Fix (env vars) + Fail-Closed Auth
 
 Changes from v3.3:
   - FIX: StreamlitSecretNotFoundError crash on Render. st.secrets does NOT read
@@ -78,6 +98,7 @@ import urllib.parse
 
 # ── Third-party ───────────────────────────────────────────────────────────────
 import anthropic
+import numpy as np
 import streamlit as st
 
 # ── OpenCV — auto-install if missing ─────────────────────────────────────────
@@ -1282,7 +1303,7 @@ def check_password() -> bool:
         <div style="color:#003087;font-size:3rem;font-weight:900;
                     letter-spacing:-1.5px;">🏈 RefBuddy</div>
         <div style="color:#4B5563;font-size:1.1rem;margin-bottom:0.5rem;">
-            Built by a ref for refs</div>
+            Built by a ref, for refs</div>
         <div style="color:#6B7280;font-size:0.9rem;">
             Private tool for MSHSL officials — enter your crew password to continue.</div>
     </div>
@@ -1354,6 +1375,12 @@ _s("messages", [])
 _s("uploaded_files_content", [])
 
 # Film
+_s("fg_frames", [])
+_s("fg_labels", [])
+_s("fg_source", "")
+_s("fg_is_video", False)
+_s("fg_fps", 1.0)
+_s("fg_result", "")
 _s("film_frames", [])
 _s("film_frame_count", 0)
 _s("film_video_name", "")
@@ -1500,6 +1527,45 @@ def chat_log_json() -> str:
 # =============================================================================
 # HELPERS — Frame extraction
 # =============================================================================
+
+def _asset_data_uri(filename: str) -> str | None:
+    """
+    Load a bundled image (e.g. Claude.png) from the app directory and return it
+    as a base64 data URI for inline <img> use. Returns None if the file is
+    missing so the caller can fall back to text — a missing logo should never
+    break the page.
+    """
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(here, filename)
+        with open(path, "rb") as f:
+            return "data:image/png;base64," + base64.standard_b64encode(f.read()).decode()
+    except Exception:
+        return None
+
+
+def image_to_frame_b64(uploaded_image) -> str | None:
+    """
+    Convert an uploaded still image (JPG/PNG/HEIC-as-JPG) into the same
+    base64-JPEG format extract_frames() produces, so photos and video frames
+    flow through one identical downstream path.
+
+    Resized to max 1280px wide to control token cost, same as video frames.
+    """
+    try:
+        data = uploaded_image.read()
+        arr = np.frombuffer(data, np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        if img is None:
+            return None
+        h, w = img.shape[:2]
+        if w > 1280:
+            img = cv2.resize(img, (1280, int(h * 1280 / w)), interpolation=cv2.INTER_AREA)
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 88])
+        return base64.standard_b64encode(buf).decode("utf-8") if ok else None
+    except Exception:
+        return None
+
 
 def extract_frames(video_path: str, fps: float = 1.0) -> list:
     """Extract frames from video at specified fps. Returns list of base64 JPEG strings."""
@@ -2007,17 +2073,29 @@ with st.sidebar:
         '<div style="background:#F8FAFC;border:2px solid #1F2937;border-radius:8px;'
         'padding:0.7rem 1rem;margin-bottom:0.8rem;">'
         '<span style="color:#1F2937;font-weight:800;font-size:1.1rem;">🏈 RefBuddy</span><br>'
-        '<span style="color:#4B5563;font-size:0.72rem;">Built by a ref for refs</span>'
+        '<span style="color:#4B5563;font-size:0.72rem;">Built by a ref, for refs</span>'
         '</div>',
         unsafe_allow_html=True,
     )
 
-    # v3.0: API key comes from secrets — no user input needed
-    st.markdown(
-        '<span class="pill-ok">✅ claude-sonnet</span>',
-        unsafe_allow_html=True,
-    )
-    st.caption("Powered by Anthropic")
+    # v3.5: "Powered by Claude" lockup (matches PickleRick styling)
+    _claude_uri = _asset_data_uri("Claude.png")
+    if _claude_uri:
+        st.markdown(
+            '<div style="display:flex;align-items:center;gap:10px;'
+            'margin:0.5rem 0 0.2rem 0;">'
+            '<span style="color:#1F2937;font-weight:700;font-size:0.9rem;">'
+            'Powered by</span>'
+            f'<img src="{_claude_uri}" alt="Claude" style="height:26px;">'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            '<div style="color:#1F2937;font-weight:700;font-size:0.9rem;'
+            'margin:0.5rem 0 0.2rem 0;">Powered by Claude</div>',
+            unsafe_allow_html=True,
+        )
 
     # v3.2: session analysis budget indicator
     _left = frames_budget_left()
@@ -2031,7 +2109,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**Knowledge Base**")
     st.caption("⚡ Prompt caching active — repeat calls ~90% cheaper")
-    st.caption("NFHS Rulebook | MSHSL Modifications | Multiple years of game notes from veteran varsity officials")
+    st.caption("Years of NFHS veteran officials' game notes and NFHS/MSHSL rulebook facts and interpretations")
 
     st.markdown("---")
     st.markdown("**Upload Files** *(Home chat)*")
@@ -2069,10 +2147,9 @@ with st.sidebar:
 # TABS
 # =============================================================================
 
-tab_home, tab_film, tab_grade, tab_ah, tab_quiz = st.tabs([
+tab_home, tab_film, tab_ah, tab_quiz = st.tabs([
     "🏈 Home",
-    "🎬 Game Film",
-    "📊 RefGrade",
+    "🎬 Film & Grade",
     "👥 Assignor Hub",
     "📝 Quiz & Drills",
 ])
@@ -2086,7 +2163,7 @@ with tab_home:
     st.markdown("""
     <div class="home-hero">
         <div class="home-hero-title">🏈 RefBuddy</div>
-        <div class="home-hero-slogan">Built by a ref for refs</div>
+        <div class="home-hero-slogan">Built by a ref, for refs</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2196,319 +2273,332 @@ with tab_home:
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 2 — GAME FILM ANALYZER
 # ─────────────────────────────────────────────────────────────────────────────
+# TAB 2 — FILM & GRADE  (v3.5: Game Film + RefGrade merged into one tab)
+#
+# Accepts BOTH still images (a photo of a call, a screenshot from Hudl) and
+# video clips. Photos are the common case — they're easy to capture on a phone
+# and easy to upload. Video is still supported for crews who have clips handy.
+#
+# Two analysis modes share the same uploaded media:
+#   • Ask a Question  — free-form rules/mechanics analysis (SYSTEM_PROMPT)
+#   • RefGrade        — structured scored evaluation (REFGRADE_PROMPT)
+# ─────────────────────────────────────────────────────────────────────────────
 
 with tab_film:
-    st.markdown("## 🎬 Game Film Analyzer")
-    st.markdown("Upload a short clip. RefBuddy extracts frames with OpenCV and analyzes them "
-                "for rule violations, mechanics, and formations. **Always includes a Visibility Check.**")
+    st.markdown("## 🎬 Film & Grade")
+    st.markdown(
+        "Upload **photos of a call** or a **short video clip**, then either ask a "
+        "question about it or run a full scored RefGrade evaluation. "
+        "Every analysis begins with a Visibility Check so you know what was "
+        "actually observed versus inferred."
+    )
 
-    if not OPENCV_AVAILABLE:
-        st.error("**opencv-python-headless is not installed.**\n\n"
-                 "Run `pip install opencv-python-headless` then restart.")
-        st.stop()
+    # ── Step 1 — Upload ──────────────────────────────────────────────────────
+    st.markdown("### Step 1 — Upload")
+    st.info(
+        "📸 **Photos work best** — screenshots from film, a still of the formation, "
+        "or a photo of the play. Upload as many as you like.\n\n"
+        "🎥 **Video** (.mp4/.mov) also works. Keep clips to 10–60 seconds and trim "
+        "to the play. Large files can be slow or fail to upload on phone data — "
+        "if a video won't go through, screenshot the key moments instead."
+    )
 
-    st.markdown("### Step 1 — Upload Clip")
-    st.info("Keep clips to 10–60 seconds. Trim to the specific play for best results.")
-    film_vid = st.file_uploader("filmvid", type=["mp4", "mov"],
-                                 label_visibility="collapsed", key="film_uploader")
+    fg_uploads = st.file_uploader(
+        "fg_upload",
+        type=["jpg", "jpeg", "png", "mp4", "mov"],
+        accept_multiple_files=True,
+        label_visibility="collapsed",
+        key="fg_uploader",
+    )
 
-    if film_vid:
-        st.markdown("### Step 2 — Extraction Settings")
-        fc1, fc2 = st.columns([1, 2])
-        with fc1:
-            fps_c = st.select_slider("fps_film", options=[0.5, 1.0, 2.0], value=1.0,
-                                      help="0.5=overview | 1.0=standard | 2.0=fast action",
-                                      key="film_fps")
-            st.caption(f"30s clip at {fps_c} fps ≈ {int(30*fps_c)} frames")
-        with fc2:
-            st.info("Each frame ≈ 800–1,600 tokens. 30 frames at Opus ≈ $0.10–0.25.")
+    if fg_uploads:
+        images = [f for f in fg_uploads
+                  if f.name.lower().endswith((".jpg", ".jpeg", ".png"))]
+        videos = [f for f in fg_uploads
+                  if f.name.lower().endswith((".mp4", ".mov"))]
 
-        st.markdown("### Step 3 — Extract Frames")
-        if st.button("🎞️ Extract Frames", use_container_width=True, key="film_extract"):
-            if not api_key_ok():
-                st.warning("Enter your API key first.")
-            else:
-                with st.spinner(f"Extracting at {fps_c} fps…"):
+        # fps control only matters when a video is present
+        fg_fps = 1.0
+        if videos:
+            fg_fps = st.select_slider(
+                "Video sampling rate (frames per second)",
+                options=[0.5, 1.0, 2.0], value=1.0,
+                help="0.5 = overview | 1.0 = standard | 2.0 = fast action",
+                key="fg_fps_slider",
+            )
+            st.caption(f"A 30s clip at {fg_fps} fps ≈ {int(30*fg_fps)} frames")
+
+        if st.button("📥 Load Media for Analysis", use_container_width=True,
+                     key="fg_load"):
+            frames, labels = [], []
+            with st.spinner("Processing upload…"):
+                # Stills first — they keep their original order
+                for img in images:
+                    b64_img = image_to_frame_b64(img)
+                    if b64_img:
+                        frames.append(b64_img)
+                        labels.append(img.name)
+                    else:
+                        st.warning(f"Could not read image: {img.name}")
+
+                # Then any video frames
+                for vid in videos:
+                    if not OPENCV_AVAILABLE:
+                        st.error("Video support requires opencv-python-headless.")
+                        break
                     try:
-                        suffix = ".mp4" if film_vid.name.lower().endswith(".mp4") else ".mov"
+                        suffix = ".mp4" if vid.name.lower().endswith(".mp4") else ".mov"
                         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                            tmp.write(film_vid.read()); tmp_path = tmp.name
-                        frames = extract_frames(tmp_path, fps=fps_c)
+                            tmp.write(vid.read()); tmp_path = tmp.name
+                        vframes = extract_frames(tmp_path, fps=fg_fps)
                         os.unlink(tmp_path)
-                        if not frames:
-                            st.error("No frames extracted — check file format/codec.")
-                        else:
-                            st.session_state.film_frames = frames
-                            st.session_state.film_frame_count = len(frames)
-                            st.session_state.film_video_name = film_vid.name
-                            st.session_state.film_fps_used = fps_c
-                            st.session_state.film_analysis_result = ""
-                            st.success(f"✅ {len(frames)} frames extracted from {film_vid.name}")
+                        if not vframes:
+                            st.error(f"No frames extracted from {vid.name} — "
+                                     "check the file format or codec.")
+                        frames.extend(vframes)
+                        labels.extend([f"{vid.name} frame {i+1}"
+                                       for i in range(len(vframes))])
                     except Exception as e:
-                        st.error(f"❌ Extraction failed: {e}")
+                        st.error(f"❌ Could not process {vid.name}: {e}")
 
-    if st.session_state.film_frame_count > 0:
-        frames = st.session_state.film_frames
-        n = st.session_state.film_frame_count
-        fps_u = st.session_state.film_fps_used
-        vname = st.session_state.film_video_name
+            if frames:
+                st.session_state.fg_frames = frames
+                st.session_state.fg_labels = labels
+                st.session_state.fg_source = ", ".join(
+                    [f.name for f in fg_uploads][:3]
+                ) + ("…" if len(fg_uploads) > 3 else "")
+                st.session_state.fg_is_video = bool(videos)
+                st.session_state.fg_fps = fg_fps
+                st.session_state.fg_result = ""
+                st.success(
+                    f"✅ Loaded {len(frames)} image(s) — "
+                    f"{len(images)} photo(s), {len(frames)-len(images)} video frame(s)"
+                )
+            else:
+                st.error("Nothing could be loaded from that upload.")
+
+    # ── Steps 2-4 — only once media is loaded ────────────────────────────────
+    if st.session_state.get("fg_frames"):
+        frames = st.session_state.fg_frames
+        n = len(frames)
+        fps_u = st.session_state.get("fg_fps", 1.0)
+        is_vid = st.session_state.get("fg_is_video", False)
+        src_name = st.session_state.get("fg_source", "upload")
 
         st.markdown("---")
-        st.markdown(f"**{n} frames loaded** from `{vname}` — ~{n/fps_u:.0f}s of footage.")
-        st.markdown("### Step 4 — Select Frame Range")
-        if n == 1:
-            sf, ef = 1, 1
+        st.markdown(f"**{n} image(s) loaded** from `{src_name}`")
+
+        # Range selector — only useful with many frames
+        if n > 1:
+            st.markdown("### Step 2 — Select Range")
+            sf, ef = st.slider("fg_range", 1, n, (1, min(n, 30)), key="fg_range_sel",
+                               label_visibility="collapsed")
         else:
-            sf, ef = st.slider("filmrange", 1, n, (1, min(n, 30)), key="film_range")
+            sf = ef = 1
         sel = ef - sf + 1
-        st.caption(f"Frames {sf}–{ef} | {sel} frames | {(sf-1)/fps_u:.1f}s–{ef/fps_u:.1f}s")
+        st.caption(f"Analyzing image {sf}–{ef} ({sel} total)")
 
-        with st.expander(f"🔍 Preview {sel} selected frames", expanded=(sel <= 15)):
-            prev = frames[sf-1:ef][:25]
-            cols = st.columns(5)
-            for i, fb in enumerate(prev):
-                with cols[i % 5]:
-                    st.image(base64.b64decode(fb), caption=f"F{sf+i} ~{(sf+i-1)/fps_u:.1f}s",
+        with st.expander(f"🔍 Preview {sel} selected", expanded=(sel <= 12)):
+            cols = st.columns(4)
+            for i, fb in enumerate(frames[sf-1:ef][:24]):
+                with cols[i % 4]:
+                    st.image(base64.b64decode(fb), caption=f"#{sf+i}",
                              use_container_width=True)
 
-        st.markdown("### Step 5 — Ask Your Question")
-        pc1, pc2, pc3 = st.columns(3)
-        FILM_PRESETS = {
-            "flag": ("Analyze this footage for any rule violations under NFHS rules. "
-                     "For each potential foul: cite the rule number, describe what you see "
-                     "using 'Frame N' format, state the correct penalty and enforcement spot, "
-                     "and note which official had primary responsibility. "
-                     "Begin with a VISIBILITY CHECK."),
-            "mech": ("Evaluate the officiating mechanics visible in this footage. "
-                     "Begin with a VISIBILITY CHECK. For each visible official describe "
-                     "positioning, whether it matches the mechanics manual, and improvements. "
-                     "Reference specific frame numbers."),
-            "form": ("Analyze the offensive and defensive formations. "
-                     "Check Rule 7-2-5 (5 players 50-79 on LOS, max 4 backs), "
-                     "player in motion legality per Rule 7-2-7, and defensive alignment. "
-                     "Begin with a VISIBILITY CHECK."),
-        }
-        pt = ""
-        with pc1:
-            if st.button("🚩 Flag Review", key="fp_flag", use_container_width=True):
-                pt = FILM_PRESETS["flag"]
-        with pc2:
-            if st.button("⚙️ Mechanics", key="fp_mech", use_container_width=True):
-                pt = FILM_PRESETS["mech"]
-        with pc3:
-            if st.button("📐 Formation", key="fp_form", use_container_width=True):
-                pt = FILM_PRESETS["form"]
+        # ── Step 3 — Choose what to do ───────────────────────────────────────
+        st.markdown("### Step 3 — What do you want?")
+        fg_mode = st.radio(
+            "fg_mode",
+            options=["❓ Ask a Question", "📊 RefGrade Evaluation"],
+            horizontal=True,
+            label_visibility="collapsed",
+            key="fg_mode_sel",
+        )
 
-        film_q = st.text_area("filmq_label", value=pt, height=110,
-                               placeholder="e.g. 'Was there holding on the left tackle at Frame 8?'",
-                               label_visibility="collapsed", key="film_q")
+        # ══════════════════════════════════════════════════════════════════
+        # MODE A — Ask a Question
+        # ══════════════════════════════════════════════════════════════════
+        if fg_mode == "❓ Ask a Question":
+            st.markdown("**Quick presets**")
+            p1, p2, p3 = st.columns(3)
+            PRESETS = {
+                "flag": ("Analyze this for any rule violations under NFHS rules. "
+                         "For each potential foul: cite the rule number, describe what "
+                         "you see using 'Frame N' format, state the correct penalty and "
+                         "enforcement spot, and note which official had primary "
+                         "responsibility. Begin with a VISIBILITY CHECK."),
+                "mech": ("Evaluate the officiating mechanics visible here. Begin with a "
+                         "VISIBILITY CHECK. For each visible official describe their "
+                         "positioning, whether it matches the mechanics manual, and any "
+                         "improvements. Reference specific frame numbers."),
+                "form": ("Analyze the offensive and defensive formations. Check Rule 7-2-5 "
+                         "(5 players numbered 50-79 on the LOS, max 4 backs), motion "
+                         "legality per Rule 7-2-7, and defensive alignment. "
+                         "Begin with a VISIBILITY CHECK."),
+            }
+            preset = ""
+            with p1:
+                if st.button("🚩 Was there a foul?", key="fg_p_flag",
+                             use_container_width=True):
+                    preset = PRESETS["flag"]
+            with p2:
+                if st.button("⚙️ Check mechanics", key="fg_p_mech",
+                             use_container_width=True):
+                    preset = PRESETS["mech"]
+            with p3:
+                if st.button("📐 Check formation", key="fg_p_form",
+                             use_container_width=True):
+                    preset = PRESETS["form"]
 
-        st.markdown("### Step 6 — Analyze")
-        can = api_key_ok() and bool(film_q.strip() if film_q else "")
-        if st.button(f"🔍 Analyze Frames {sf}–{ef} ({sel} frames)",
-                     disabled=not can, use_container_width=True, key="film_analyze"):
-            if not spend_frames(sel):
-                st.stop()
-            client = make_client()
-            blocks = build_vision_content(
-                frames, sf-1, ef-1, film_q.strip(), vname, fps_u,
-                preamble_extra="Begin with a VISIBILITY CHECK listing which crew members are "
-                               "clearly visible, partially visible, or not visible.")
-            st.markdown("---")
-            st.markdown("#### ⚡ Film Analysis")
-            ph = st.empty(); full = ""
-            try:
-                with st.spinner(f"Analyzing {sel} frames…"):
-                    for chunk in stream_vision(client, blocks, SYSTEM_PROMPT):
-                        full += chunk; ph.markdown(full + "▌")
-                ph.markdown(full)
-                st.session_state.film_analysis_result = full
-            except Exception as e:
-                st.error(handle_api_error(e))
+            fg_q = st.text_area(
+                "fg_question", value=preset, height=110,
+                placeholder="e.g. 'Is the left tackle holding here?' or "
+                            "'Was my positioning correct as Back Judge on this play?'",
+                label_visibility="collapsed", key="fg_q",
+            )
 
-        if st.session_state.film_analysis_result:
-            with st.expander("📄 Previous Analysis", expanded=False):
-                st.markdown(st.session_state.film_analysis_result)
-                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                st.download_button("⬇️ Download Analysis",
-                                   data=st.session_state.film_analysis_result,
-                                   file_name=f"refbuddy_film_{ts}.txt", mime="text/plain")
+            if st.button(f"🔍 Analyze ({sel} image{'s' if sel != 1 else ''})",
+                         disabled=not (fg_q or "").strip(),
+                         use_container_width=True, key="fg_run_q"):
+                if not spend_frames(sel):
+                    st.stop()
+                blocks = build_vision_content(
+                    frames, sf-1, ef-1, fg_q.strip(), src_name, fps_u,
+                    preamble_extra=(
+                        "These may be still photos rather than sequential video frames. "
+                        "Begin with a VISIBILITY CHECK listing which crew members are "
+                        "clearly visible, partially visible, or not visible."
+                    ),
+                )
+                st.markdown("---")
+                st.markdown("#### ⚡ Analysis")
+                ph = st.empty(); full = ""
+                try:
+                    with st.spinner(f"Analyzing {sel} image(s)…"):
+                        for chunk in stream_vision(make_client(), blocks, SYSTEM_PROMPT):
+                            full += chunk; ph.markdown(full + "▌")
+                    ph.markdown(full)
+                    st.session_state.fg_result = full
+                except Exception as e:
+                    st.error(handle_api_error(e))
 
-    elif film_vid is None:
-        st.markdown("---")
-        st.markdown("""<div class="rb-card-blue">
-        <h4 style="margin-top:0;color:#003087;">How to Use the Film Analyzer</h4>
-        <ol style="color:#1F2937;line-height:2.0;">
-        <li>Upload a .mp4 or .mov clip (10–60 seconds)</li>
-        <li>Set extraction rate — 1 fps works for most plays</li>
-        <li>Extract Frames — OpenCV pulls one image per second</li>
-        <li>Use the slider to focus on the key moment</li>
-        <li>Ask your question or tap a quick preset</li>
-        <li>Analyze — RefBuddy cites specific frames + NFHS rules</li>
-        </ol></div>""", unsafe_allow_html=True)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 3 — REFGRADE
-# ─────────────────────────────────────────────────────────────────────────────
-
-with tab_grade:
-    st.markdown("## 📊 RefGrade — Officiating Evaluation")
-    st.markdown("Structured, scored evaluation with category scores (0–100), frame-by-frame "
-                "highlights, and coaching bullets. **Always includes a Visibility Check.**")
-
-    if not OPENCV_AVAILABLE:
-        st.error("**opencv-python-headless is not installed.**\n\n"
-                 "Run `pip install opencv-python-headless` then restart.")
-        st.stop()
-
-    st.markdown("### Step 1 — Upload Clip")
-    rg_vid = st.file_uploader("rgvid", type=["mp4", "mov"],
-                               label_visibility="collapsed", key="rg_uploader")
-
-    if rg_vid:
-        st.markdown("### Step 2 — Evaluation Options")
-        rc1, rc2 = st.columns(2)
-        with rc1:
-            eval_scope = st.selectbox("Evaluate for", options=[
-                "Full Crew (Overall)", "Referee (R)", "Umpire (U)",
-                "Line Judge (LJ)", "Down Judge (DJ)", "Back Judge (BJ)",
-                "Side Judge (SJ)", "Field Judge (FJ)"], key="rg_scope")
-        with rc2:
-            crew_size = st.selectbox("Crew size",
-                                      options=["3-Person Crew", "4-Person Crew", "5-Person Crew"],
-                                      key="rg_crew_size")
-        focus_input = st.text_input("Focus area (optional)",
-                                     placeholder="e.g. 'BJ positioning on punt'", key="rg_focus")
-        eval_categories = st.multiselect("Score these categories", options=[
-            "Positioning", "Call Accuracy", "Mechanics Execution",
-            "Dead-ball Officiating", "Communication / Signals",
-            "Clock Management", "Penalty Administration"],
-            default=["Positioning", "Call Accuracy", "Mechanics Execution",
-                     "Dead-ball Officiating", "Communication / Signals"],
-            key="rg_categories")
-
-        st.markdown("### Step 3 — Extract Frames")
-        if st.button("🎞️ Extract Frames for RefGrade",
-                     use_container_width=True, key="rg_extract"):
-            if not api_key_ok():
-                st.warning("Enter your API key first.")
-            else:
-                with st.spinner("Extracting frames at 1 fps…"):
-                    try:
-                        suffix = ".mp4" if rg_vid.name.lower().endswith(".mp4") else ".mov"
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                            tmp.write(rg_vid.read()); tmp_path = tmp.name
-                        frames = extract_frames(tmp_path, fps=1.0)
-                        os.unlink(tmp_path)
-                        if not frames:
-                            st.error("No frames extracted.")
-                        else:
-                            st.session_state.rg_frames = frames
-                            st.session_state.rg_frame_count = len(frames)
-                            st.session_state.rg_video_name = rg_vid.name
-                            st.session_state.rg_fps_used = 1.0
-                            st.session_state.rg_result = ""
-                            st.success(f"✅ {len(frames)} frames extracted from {rg_vid.name}")
-                    except Exception as e:
-                        st.error(f"❌ Extraction failed: {e}")
-
-    if st.session_state.rg_frame_count > 0:
-        rg_frames = st.session_state.rg_frames
-        rg_n = st.session_state.rg_frame_count
-        rg_fps = st.session_state.rg_fps_used
-        rg_vname = st.session_state.rg_video_name
-
-        st.markdown("---")
-        st.markdown(f"**{rg_n} frames loaded** from `{rg_vname}` — ~{rg_n/rg_fps:.0f}s of footage.")
-        st.markdown("### Step 4 — Select Frame Range")
-        if rg_n == 1:
-            rg_sf = rg_ef = 1
+        # ══════════════════════════════════════════════════════════════════
+        # MODE B — RefGrade Evaluation
+        # ══════════════════════════════════════════════════════════════════
         else:
-            rg_sf, rg_ef = st.slider("rgrange", 1, rg_n, (1, min(rg_n, 30)), key="rg_range")
-        rg_sel = rg_ef - rg_sf + 1
-        st.caption(f"Frames {rg_sf}–{rg_ef} | {rg_sel} frames | "
-                   f"{(rg_sf-1)/rg_fps:.1f}s–{rg_ef/rg_fps:.1f}s")
+            st.markdown("**Evaluation setup**")
+            g1, g2 = st.columns(2)
+            with g1:
+                fg_scope = st.selectbox(
+                    "Evaluate", options=[
+                        "Full Crew (Overall)", "Referee (R)", "Umpire (U)",
+                        "Line Judge (LJ)", "Down Judge (DJ)", "Back Judge (BJ)",
+                        "Side Judge (SJ)", "Field Judge (FJ)"],
+                    key="fg_scope")
+            with g2:
+                fg_crew = st.selectbox(
+                    "Crew size",
+                    options=["3-Person Crew", "4-Person Crew", "5-Person Crew"],
+                    key="fg_crew")
 
-        with st.expander(f"🔍 Preview {rg_sel} selected frames", expanded=(rg_sel <= 15)):
-            prev = rg_frames[rg_sf-1:rg_ef][:25]
-            cols = st.columns(5)
-            for i, fb in enumerate(prev):
-                with cols[i % 5]:
-                    st.image(base64.b64decode(fb),
-                             caption=f"F{rg_sf+i} ~{(rg_sf+i-1)/rg_fps:.1f}s",
-                             use_container_width=True)
+            fg_cats = st.multiselect(
+                "Score these categories", options=[
+                    "Positioning", "Call Accuracy", "Mechanics Execution",
+                    "Dead-ball Officiating", "Communication / Signals",
+                    "Clock Management", "Penalty Administration"],
+                default=["Positioning", "Call Accuracy", "Mechanics Execution",
+                         "Communication / Signals"],
+                key="fg_cats")
 
-        st.markdown("### Step 5 — Additional Notes (Optional)")
-        rg_notes = st.text_area("rgnotes_label", height=80,
-                                 placeholder="e.g. 'A flag was thrown — evaluate whether correct.'",
-                                 label_visibility="collapsed", key="rg_notes")
+            fg_notes = st.text_area(
+                "Context or focus (optional)", height=80,
+                placeholder="e.g. 'A flag was thrown on this play — was it correct?' "
+                            "or 'Check my depth as Back Judge.'",
+                key="fg_notes")
 
-        st.markdown("### Step 6 — Run RefGrade")
-        can_grade = api_key_ok() and bool(eval_categories)
-        if st.button(f"📊 Run RefGrade — {eval_scope} ({rg_sel} frames)",
-                     disabled=not can_grade, use_container_width=True, key="rg_run"):
-            cats_str = ", ".join(eval_categories)
-            focus_str = f"\nFocus: {focus_input.strip()}" if focus_input.strip() else ""
-            notes_str = f"\nContext: {rg_notes.strip()}" if rg_notes.strip() else ""
-            rg_q = (f"RefGrade evaluation.\nClip: {rg_vname}\nScope: {eval_scope}\n"
-                    f"Crew: {crew_size}\nScore: {cats_str}{focus_str}{notes_str}\n\n"
-                    f"Use the exact RefGrade report structure. Begin with VISIBILITY CHECK. "
-                    f"Cite every mechanic and rule.")
-            if not spend_frames(rg_sel):
-                st.stop()
-            content_blocks = build_vision_content(
-                rg_frames, rg_sf-1, rg_ef-1, rg_q, rg_vname, rg_fps,
-                preamble_extra="Structured RefGrade evaluation. Visibility Check is mandatory first section.")
-            st.markdown("---"); st.markdown("#### 📊 RefGrade Report")
-            client = make_client(); ph = st.empty(); full_grade = ""
-            try:
-                with st.spinner(f"Running RefGrade on {rg_sel} frames… (20–90 seconds)"):
-                    for chunk in stream_vision(client, content_blocks, REFGRADE_PROMPT):
-                        full_grade += chunk; ph.markdown(full_grade + "▌")
-                ph.markdown(full_grade)
-                st.session_state.rg_result = full_grade
-                st.session_state.rg_saved_logs.append({
-                    "timestamp": datetime.datetime.now().isoformat(),
-                    "clip": rg_vname, "scope": eval_scope,
-                    "crew": crew_size, "frames": f"{rg_sf}-{rg_ef}", "result": full_grade,
-                })
-            except Exception as e:
-                st.error(handle_api_error(e))
+            if st.button(f"📊 Run RefGrade — {fg_scope}",
+                         disabled=not fg_cats,
+                         use_container_width=True, key="fg_run_grade"):
+                if not spend_frames(sel):
+                    st.stop()
+                cats = ", ".join(fg_cats)
+                extra = f"\nContext: {fg_notes.strip()}" if fg_notes.strip() else ""
+                gq = (f"Perform a RefGrade evaluation.\n"
+                      f"Source: {src_name}\nScope: {fg_scope}\nCrew: {fg_crew}\n"
+                      f"Score these categories: {cats}{extra}\n\n"
+                      f"Use the exact RefGrade report structure from your system prompt. "
+                      f"Begin with a VISIBILITY CHECK. Cite the specific mechanic or rule "
+                      f"behind every score. If these are still photos rather than video, "
+                      f"say so and scope your confidence accordingly.")
+                blocks = build_vision_content(
+                    frames, sf-1, ef-1, gq, src_name, fps_u,
+                    preamble_extra=("Structured RefGrade evaluation. Visibility Check is "
+                                    "the mandatory first section. These may be stills "
+                                    "rather than sequential frames."),
+                )
+                st.markdown("---")
+                st.markdown("#### 📊 RefGrade Report")
+                ph = st.empty(); full = ""
+                try:
+                    with st.spinner("Running RefGrade… (20–90 seconds)"):
+                        for chunk in stream_vision(make_client(), blocks, REFGRADE_PROMPT):
+                            full += chunk; ph.markdown(full + "▌")
+                    ph.markdown(full)
+                    st.session_state.fg_result = full
+                    st.session_state.rg_saved_logs.append({
+                        "timestamp": datetime.datetime.now().isoformat(),
+                        "source": src_name, "scope": fg_scope, "crew": fg_crew,
+                        "range": f"{sf}-{ef}", "result": full,
+                    })
+                except Exception as e:
+                    st.error(handle_api_error(e))
 
-        if st.session_state.rg_result:
+        # ── Step 4 — Export ──────────────────────────────────────────────────
+        if st.session_state.get("fg_result"):
             st.markdown("---")
-            cs1, cs2 = st.columns(2)
+            e1, e2, e3 = st.columns(3)
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            with cs1:
-                st.download_button("⬇️ Download RefGrade (.txt)",
-                                   data=st.session_state.rg_result,
-                                   file_name=f"refgrade_{ts}.txt", mime="text/plain",
-                                   use_container_width=True)
-            with cs2:
-                if st.session_state.rg_saved_logs:
-                    st.download_button(f"⬇️ All Logs ({len(st.session_state.rg_saved_logs)})",
-                                       data=json.dumps(st.session_state.rg_saved_logs, indent=2),
-                                       file_name=f"refgrade_all_{ts}.json",
-                                       mime="application/json", use_container_width=True)
+            with e1:
+                st.download_button("⬇️ Download TXT",
+                                   data=st.session_state.fg_result,
+                                   file_name=f"refbuddy_analysis_{ts}.txt",
+                                   mime="text/plain", use_container_width=True)
+            with e2:
+                _pdf = markdown_to_pdf_bytes(st.session_state.fg_result,
+                                             "RefBuddy Film Analysis")
+                if _pdf:
+                    st.download_button("⬇️ Export PDF", data=_pdf,
+                                       file_name=f"refbuddy_analysis_{ts}.pdf",
+                                       mime="application/pdf",
+                                       use_container_width=True)
+            with e3:
+                if st.button("🗑️ Clear", use_container_width=True, key="fg_clear"):
+                    for k in ("fg_frames", "fg_labels", "fg_source",
+                              "fg_is_video", "fg_result"):
+                        st.session_state.pop(k, None)
+                    st.rerun()
 
-    elif rg_vid is None:
+    elif not fg_uploads:
         st.markdown("---")
         st.markdown("""<div class="rb-card-blue">
-        <h4 style="margin-top:0;color:#003087;">How RefGrade Works</h4>
+        <h4 style="margin-top:0;color:#003087;">How to Use Film &amp; Grade</h4>
         <ol style="color:#1F2937;line-height:2.0;">
-        <li>Upload a .mp4 or .mov clip (10–60 seconds)</li>
-        <li>Choose scope — Full Crew or a specific position</li>
-        <li>Select categories to score</li>
-        <li>Extract Frames — always at 1 fps</li>
-        <li>Set frame range — focus on the key sequence</li>
-        <li>Run RefGrade — structured report with scores, frame citations, coaching bullets</li>
-        </ol></div>""", unsafe_allow_html=True)
+        <li><b>Upload photos</b> of the play — screenshots, stills, or a phone photo.
+            Video clips work too, but photos are faster and more reliable.</li>
+        <li><b>Load Media</b> — everything becomes analyzable images</li>
+        <li><b>Pick a mode</b> — ask a specific question, or run a scored RefGrade</li>
+        <li><b>Review</b> — every answer cites NFHS rules and starts with a
+            Visibility Check</li>
+        <li><b>Export</b> to TXT or PDF</li>
+        </ol>
+        <p style="font-size:0.82rem;color:#4B5563;margin-bottom:0;">
+        <em>Tip: three or four well-chosen stills (pre-snap, at the snap, at the point
+        of the foul) usually beat a full video clip for both speed and cost.</em>
+        </p>
+        </div>""", unsafe_allow_html=True)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 4 — ASSIGNOR / CREW EVAL HUB  (v2.5 complete redesign)
-# Three sub-sections: Crew Eval | Ref Eval | Pre-Game Meeting
+
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab_ah:
@@ -3340,11 +3430,10 @@ with tab_quiz:
 
 st.markdown(f"""
 <div class="rb-footer">
-    Built by a ref for refs 🏈 &nbsp;|&nbsp;
-    RefBuddy v3.4 &nbsp;|&nbsp; MN HS Football &nbsp;|&nbsp;
-    NFHS rule references &nbsp;|&nbsp; MSHSL modifications &nbsp;|&nbsp; Four seasons of personal game notes<br>
+    Built by a ref, for refs 🏈 &nbsp;|&nbsp;
+    Years of NFHS veteran officials&rsquo; game notes and NFHS/MSHSL rulebook facts and interpretations<br>
     <span style="font-size:0.72rem;">
-    Always confirm rulings with your MSHSL assignor. Not official MSHSL interpretation.
+    Always confirm rulings with your MSHSL assignor. Not official NFHS/MSHSL interpretation.
     </span>
 </div>
 """, unsafe_allow_html=True)
