@@ -1,6 +1,35 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
-Version 3.6 — UI Polish (logo size, expander/uploader contrast, Quiz rename)
+Version 1.0 — PUBLIC RELEASE
+
+Shipped at refbuddy.ai for MSHSL football officials, August 2026.
+
+Four tabs: Home chat, Film & Grade, Ref Hub, Quiz.
+Backed by the RefBuddy Knowledge Base — NFHS rule facts (2021 baseline plus all
+2022-2026 changes), MSHSL Minnesota modifications, crew and position mechanics,
+and multiple seasons of veteran officials' game notes.
+
+Production posture:
+  - Shared-password access gate (APP_PASSWORD), fails closed on Render
+  - Per-session analysis cap (400 frames) plus an account-level spend limit
+  - Prompt caching on the knowledge base — repeat calls ~90% cheaper
+  - Copyright guardrail: the model never reproduces NFHS/MSHSL text verbatim,
+    only plain-language summaries with rule numbers
+  - Terms of Use, non-affiliation notice, and no-warranty disclaimer in footer
+
+Final polish in this release:
+  - "Assignor Hub" renamed "Ref Hub"; Individual Referee Evaluation now uses a
+    football icon
+  - Pre-Game Meeting description rewritten to reference the RefBuddy Knowledge
+    Base rather than an internal variable name
+  - NEW CSS Layer 4: fixes BaseWeb form controls that ignored the outer theme —
+    selectbox values rendering white-on-white, multiselect chips, password
+    fields rendering dark-on-dark, and the truncated "Press Enter to apply"
+    overlay. Uses -webkit-text-fill-color, which overrides `color` on inputs in
+    WebKit browsers and is required for the fix to hold in Safari and Chrome.
+  - Claude logo enlarged to 60px
+
+Prior — Version 3.6 — UI Polish (logo size, expander/uploader contrast, Quiz rename)
 
 Changes from v3.5:
   - Claude logo enlarged 26px → 46px; "Powered by" bumped to 1.05rem and
@@ -1317,6 +1346,120 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+# ── Layer 4: v1.0 form-control fixes — dropdowns, chips, inputs ──────────────
+# Two problems solved here, both the same root cause: Streamlit renders these
+# widgets through BaseWeb, which applies its own theme tokens to the *inner*
+# elements. Styling the outer wrapper (what Layers 1-3 did) never reached them,
+# so selected values rendered white-on-white and password fields dark-on-dark.
+#
+# Fixes below target the inner BaseWeb nodes directly and also set
+# -webkit-text-fill-color, which overrides `color` on inputs in WebKit browsers
+# (Safari and Chrome on macOS) — without it the text stays invisible.
+st.markdown("""
+<style>
+    /* ── Selectbox / multiselect: the CLOSED control and its selected value ── */
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div *,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] > div > div,
+    div[data-baseweb="select"] input,
+    div[data-baseweb="select"] [data-baseweb="select-value"] {
+        color: #1F2937 !important;
+        -webkit-text-fill-color: #1F2937 !important;
+        background-color: #F8FAFC !important;
+    }
+    /* Keep the chevron/clear icons visible */
+    div[data-baseweb="select"] svg {
+        fill: #1F2937 !important;
+        color: #1F2937 !important;
+    }
+
+    /* ── The OPEN dropdown menu ─────────────────────────────────────────── */
+    [data-baseweb="popover"],
+    [data-baseweb="popover"] > div,
+    [data-baseweb="menu"],
+    ul[role="listbox"] {
+        background-color: #FFFFFF !important;
+    }
+    li[role="option"],
+    ul[role="listbox"] li,
+    [data-baseweb="menu"] li,
+    li[role="option"] * {
+        color: #1F2937 !important;
+        -webkit-text-fill-color: #1F2937 !important;
+        background-color: #FFFFFF !important;
+    }
+    li[role="option"]:hover,
+    li[role="option"]:hover *,
+    li[role="option"][aria-selected="true"],
+    li[role="option"][aria-selected="true"] * {
+        background-color: #EEF2FF !important;
+        color: #003087 !important;
+        -webkit-text-fill-color: #003087 !important;
+        font-weight: 600 !important;
+    }
+
+    /* ── Multiselect chips (e.g. emphasis topics) ───────────────────────── */
+    span[data-baseweb="tag"] {
+        background-color: #003087 !important;
+        border-radius: 6px !important;
+    }
+    span[data-baseweb="tag"],
+    span[data-baseweb="tag"] span,
+    span[data-baseweb="tag"] div {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+    span[data-baseweb="tag"] svg {
+        fill: #FFFFFF !important;
+        color: #FFFFFF !important;
+    }
+
+    /* ── Text & password inputs ─────────────────────────────────────────── */
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextInput"] input[type="password"],
+    [data-testid="stTextInput"] div[data-baseweb="input"],
+    [data-testid="stTextInput"] div[data-baseweb="base-input"] {
+        background-color: #FFFFFF !important;
+        color: #1F2937 !important;
+        -webkit-text-fill-color: #1F2937 !important;
+    }
+    /* Password reveal (eye) icon */
+    [data-testid="stTextInput"] button svg,
+    [data-testid="stTextInput"] svg {
+        fill: #4B5563 !important;
+        color: #4B5563 !important;
+    }
+    /* "Press Enter to apply" overlay — it overlaps the eye icon and adds no
+       value on a single-line field, so hide it there. Kept on textareas,
+       where the Cmd+Enter hint is genuinely useful. */
+    [data-testid="stTextInput"] [data-testid="InputInstructions"] {
+        display: none !important;
+    }
+    [data-testid="stTextArea"] [data-testid="InputInstructions"] {
+        color: #6B7280 !important;
+        font-size: 0.68rem !important;
+        background: transparent !important;
+    }
+
+    /* ── Date input (pre-game game date) ────────────────────────────────── */
+    [data-testid="stDateInput"] input,
+    [data-testid="stDateInput"] div[data-baseweb="input"] {
+        background-color: #FFFFFF !important;
+        color: #1F2937 !important;
+        -webkit-text-fill-color: #1F2937 !important;
+    }
+
+    /* ── Radio options (quiz answers) ───────────────────────────────────── */
+    [data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p {
+        color: #1F2937 !important;
+        -webkit-text-fill-color: #1F2937 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 # =============================================================================
 # ACCESS GATE  (v3.2)
 # Shared-password login. Protects your Anthropic API key from public abuse.
@@ -2190,7 +2333,7 @@ with st.sidebar:
             '<span style="color:#1F2937;font-weight:700;font-size:1.05rem;'
             'line-height:1;">Powered by</span>'
             f'<img src="{_claude_uri}" alt="Claude" '
-            'style="height:46px;width:auto;display:block;">'
+            'style="height:60px;width:auto;display:block;">'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2253,7 +2396,7 @@ with st.sidebar:
 tab_home, tab_film, tab_ah, tab_quiz = st.tabs([
     "🏈 Home",
     "🎬 Film & Grade",
-    "👥 Assignor Hub",
+    "👥 Ref Hub",
     "📝 Quiz",
 ])
 
@@ -2705,7 +2848,7 @@ with tab_film:
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab_ah:
-    st.markdown("## 👥 Assignor / Crew Eval Hub")
+    st.markdown("## 👥 Ref Hub")
     st.markdown("Film-based crew and individual official evaluations, plus auto-generated "
                 "pre-game meeting agendas with PDF and Word export.")
 
@@ -2728,7 +2871,7 @@ with tab_ah:
 
     with sub_c2:
         active = st.session_state.ah_sub == "ref"
-        if st.button("🧑‍⚖️ Ref Eval", use_container_width=True,
+        if st.button("🏈 Ref Eval", use_container_width=True,
                      key="ah_sub_ref",
                      type="primary" if active else "secondary"):
             _set_ah_sub("ref"); st.rerun()
@@ -2887,7 +3030,7 @@ with tab_ah:
     # ═══════════════════════════════════════════════════════════════════════════
 
     elif st.session_state.ah_sub == "ref":
-        st.markdown("### 🧑‍⚖️ Individual Referee Evaluation")
+        st.markdown("### 🏈 Individual Referee Evaluation")
         st.markdown("Upload game film and choose the specific official to evaluate. "
                     "The report focuses exclusively on that position.")
 
@@ -3022,9 +3165,9 @@ with tab_ah:
     elif st.session_state.ah_sub == "pregame":
         st.markdown("### 📅 Pre-Game Meeting Agenda Generator")
         st.markdown(
-            "Auto-generates a comprehensive pre-game agenda from CORE_KNOWLEDGE including "
-            "2026 rule changes, key mechanics, and MSHSL-specific points. "
-            "Add your own assignor notes for a fully customized meeting."
+            "Auto-generates a pre-game agenda from the RefBuddy Knowledge Base, "
+            "including 2026 rule changes, key mechanics, and your own additional "
+            "notes section for a fully customized meeting."
         )
 
         pg1, pg2 = st.columns(2)
