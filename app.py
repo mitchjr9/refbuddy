@@ -1,5 +1,22 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
+Version 1.1 — Ref Hub Restructure + Working Presets + Stronger CTAs
+
+Changes from v1.0.1:
+  - REF HUB: three sections collapsed to two. Pre-Game Meeting now leads (most
+    used, needs no upload). Crew Eval and Ref Eval were near-identical forms
+    differing only in scope, so they are merged into one Evaluations section
+    with a scope dropdown — "Full Crew" routes to CREW_EVAL_PROMPT, any single
+    position routes to REF_EVAL_PROMPT. Both now accept photos as well as video.
+  - FIX: Film & Grade quick presets did nothing. The buttons set a local var
+    passed as value= to a text_area that already had key="fg_q" — Streamlit
+    ignores value= on rerun when widget state exists. Presets now write to
+    st.session_state["fg_q"] and rerun.
+  - CTA: primary buttons (Analyze, Run RefGrade, Generate Agenda, active Ref Hub
+    section) render solid #003087 with white text via a new button[kind=primary]
+    rule, instead of blending in with every other light button.
+  - Claude logo 70px → 85px; assignor notes placeholder simplified.
+
 Version 1.0.1 — Light Theme Pinned (root-cause fix)
 
 THE FIX THAT MATTERED: added .streamlit/config.toml with base = "light".
@@ -993,6 +1010,40 @@ st.markdown("""
         color: #94A3B8 !important;
         border-color: #94A3B8 !important;
     }
+    /* PRIMARY buttons — solid football blue. Used for the main call-to-action
+       on each screen (Analyze, Run RefGrade, Generate) and to mark the active
+       sub-tab in Ref Hub. Declared after the base rule so it wins. */
+    .stButton button[kind="primary"],
+    .stButton button[data-testid="stBaseButton-primary"],
+    [data-testid="stBaseButton-primary"] {
+        background-color: #003087 !important;
+        color: #FFFFFF !important;
+        border: 2px solid #003087 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.01em;
+        box-shadow: 0 2px 8px rgba(0,48,135,0.25) !important;
+    }
+    .stButton button[kind="primary"]:hover,
+    [data-testid="stBaseButton-primary"]:hover {
+        background-color: #002266 !important;
+        border-color: #002266 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 14px rgba(0,48,135,0.35) !important;
+    }
+    .stButton button[kind="primary"] p,
+    .stButton button[kind="primary"] div,
+    [data-testid="stBaseButton-primary"] p,
+    [data-testid="stBaseButton-primary"] div {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+    .stButton button[kind="primary"]:disabled,
+    [data-testid="stBaseButton-primary"]:disabled {
+        background-color: #CBD5E1 !important;
+        border-color: #CBD5E1 !important;
+        color: #64748B !important;
+        box-shadow: none !important;
+    }
     /* v3.0: selectbox + multiselect — light bg, black border, black text */
     .stSelectbox > div, .stMultiSelect > div,
     .stSelectbox > div > div, .stMultiSelect > div > div {
@@ -1656,6 +1707,7 @@ _s("fg_source", "")
 _s("fg_is_video", False)
 _s("fg_fps", 1.0)
 _s("fg_result", "")
+_s("fg_q", "")
 _s("film_frames", [])
 _s("film_frame_count", 0)
 _s("film_video_name", "")
@@ -1671,7 +1723,9 @@ _s("rg_result", "")
 _s("rg_saved_logs", [])
 
 # Assignor Hub v2.5 — three sub-tabs
-_s("ah_sub", "crew")          # "crew" | "ref" | "pregame"
+_s("ah_sub", "pregame")       # "pregame" | "eval"
+_s("ah_eval_result", "")
+_s("ah_eval_scope", "")
 _s("ah_crew_frames", [])
 _s("ah_crew_frame_count", 0)
 _s("ah_crew_video_name", "")
@@ -2362,7 +2416,7 @@ with st.sidebar:
             '<span style="color:#1F2937;font-weight:700;font-size:1.05rem;'
             'line-height:1;">Powered by</span>'
             f'<img src="{_claude_uri}" alt="Claude" '
-            'style="height:70px;width:auto;display:block;">'
+            'style="height:85px;width:auto;display:block;">'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2711,29 +2765,36 @@ with tab_film:
                          "legality per Rule 7-2-7, and defensive alignment. "
                          "Begin with a VISIBILITY CHECK."),
             }
-            preset = ""
+            # A preset writes straight into session_state and reruns.
+            # Passing value= to a widget that already has a key is a no-op on
+            # rerun — Streamlit keeps the stored widget state — which is why
+            # these buttons previously appeared to do nothing.
             with p1:
                 if st.button("🚩 Was there a foul?", key="fg_p_flag",
                              use_container_width=True):
-                    preset = PRESETS["flag"]
+                    st.session_state["fg_q"] = PRESETS["flag"]
+                    st.rerun()
             with p2:
                 if st.button("⚙️ Check mechanics", key="fg_p_mech",
                              use_container_width=True):
-                    preset = PRESETS["mech"]
+                    st.session_state["fg_q"] = PRESETS["mech"]
+                    st.rerun()
             with p3:
                 if st.button("📐 Check formation", key="fg_p_form",
                              use_container_width=True):
-                    preset = PRESETS["form"]
+                    st.session_state["fg_q"] = PRESETS["form"]
+                    st.rerun()
 
             fg_q = st.text_area(
-                "fg_question", value=preset, height=110,
+                "fg_question", height=110,
                 placeholder="e.g. 'Is the left tackle holding here?' or "
                             "'Was my positioning correct as Back Judge on this play?'",
                 label_visibility="collapsed", key="fg_q",
             )
 
-            if st.button(f"🔍 Analyze ({sel} image{'s' if sel != 1 else ''})",
+            if st.button(f"🔍  Analyze {sel} Image{'s' if sel != 1 else ''}",
                          disabled=not (fg_q or "").strip(),
+                         type="primary",
                          use_container_width=True, key="fg_run_q"):
                 if not spend_frames(sel):
                     st.stop()
@@ -2791,8 +2852,9 @@ with tab_film:
                             "or 'Check my depth as Back Judge.'",
                 key="fg_notes")
 
-            if st.button(f"📊 Run RefGrade — {fg_scope}",
+            if st.button(f"📊  Run RefGrade — {fg_scope}",
                          disabled=not fg_cats,
+                         type="primary",
                          use_container_width=True, key="fg_run_grade"):
                 if not spend_frames(sel):
                     st.stop()
@@ -2875,323 +2937,45 @@ with tab_film:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# TAB 3 — REF HUB  (v1.1: Pre-Game first, Crew + Ref Eval merged)
+#
+# Two sections instead of three. Pre-Game Meeting leads because it is the most
+# frequently used and needs no upload. Crew Eval and Ref Eval were near-identical
+# forms differing only in scope, so they are now one Evaluations section with a
+# scope dropdown — "Full Crew" routes to CREW_EVAL_PROMPT, any single position
+# routes to REF_EVAL_PROMPT. Both accept photos as well as video.
+# ─────────────────────────────────────────────────────────────────────────────
 
 with tab_ah:
     st.markdown("## 👥 Ref Hub")
-    st.markdown("Film-based crew and individual official evaluations, plus auto-generated "
-                "pre-game meeting agendas with PDF and Word export.")
+    st.markdown(
+        "Auto-generated pre-game meeting agendas, plus film- and photo-based "
+        "crew and individual official evaluations."
+    )
 
-
-    # ── Three sub-tab selector ────────────────────────────────────────────────
-    sub_c1, sub_c2, sub_c3 = st.columns(3)
-
-    def _set_ah_sub(val):
-        st.session_state.ah_sub = val
-
-    with sub_c1:
-        active = st.session_state.ah_sub == "crew"
-        if st.button("🎬 Crew Eval", use_container_width=True,
-                     key="ah_sub_crew",
-                     type="primary" if active else "secondary"):
-            _set_ah_sub("crew"); st.rerun()
-        if active:
-            st.markdown(f'<div style="height:3px;background:{BLUE};border-radius:2px;"></div>',
-                        unsafe_allow_html=True)
-
-    with sub_c2:
-        active = st.session_state.ah_sub == "ref"
-        if st.button("🏈 Ref Eval", use_container_width=True,
-                     key="ah_sub_ref",
-                     type="primary" if active else "secondary"):
-            _set_ah_sub("ref"); st.rerun()
-        if active:
-            st.markdown(f'<div style="height:3px;background:{BLUE};border-radius:2px;"></div>',
-                        unsafe_allow_html=True)
-
-    with sub_c3:
-        active = st.session_state.ah_sub == "pregame"
+    # ── Section selector ─────────────────────────────────────────────────────
+    sub_a, sub_b = st.columns(2)
+    with sub_a:
+        _active = st.session_state.ah_sub == "pregame"
         if st.button("📅 Pre-Game Meeting", use_container_width=True,
                      key="ah_sub_pregame",
-                     type="primary" if active else "secondary"):
-            _set_ah_sub("pregame"); st.rerun()
-        if active:
-            st.markdown(f'<div style="height:3px;background:{BLUE};border-radius:2px;"></div>',
-                        unsafe_allow_html=True)
+                     type="primary" if _active else "secondary"):
+            st.session_state.ah_sub = "pregame"
+            st.rerun()
+    with sub_b:
+        _active = st.session_state.ah_sub == "eval"
+        if st.button("🎬 Evaluations", use_container_width=True,
+                     key="ah_sub_eval",
+                     type="primary" if _active else "secondary"):
+            st.session_state.ah_sub = "eval"
+            st.rerun()
 
     st.markdown("---")
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SUB: CREW EVAL
-    # Video upload → full crew analysis with film + CORE_KNOWLEDGE
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    if st.session_state.ah_sub == "crew":
-        st.markdown("### 🎬 Crew Evaluation")
-        st.markdown("Upload game film (short clip or longer segment) to get a full crew "
-                    "evaluation with positioning analysis, call accuracy, and coaching bullets.")
-
-        if not OPENCV_AVAILABLE:
-            st.error("opencv-python-headless is required. Run: `pip install opencv-python-headless`")
-        else:
-            st.info("Supported: .mp4, .mov — any length, but shorter clips (10–120s) "
-                    "give the most focused analysis. For longer games, clip the key sequences.")
-
-            crew_vid = st.file_uploader("crew_vid", type=["mp4", "mov"],
-                                         label_visibility="collapsed", key="ah_crew_uploader")
-
-            if crew_vid:
-                cv1, cv2 = st.columns(2)
-                with cv1:
-                    crew_fps = st.select_slider("crew_fps", options=[0.5, 1.0, 2.0], value=1.0,
-                                                 help="0.5=overview | 1.0=standard | 2.0=fast action",
-                                                 key="crew_fps_slider")
-                    st.caption(f"At {crew_fps} fps, a 60s clip → ~{int(60*crew_fps)} frames")
-                with cv2:
-                    crew_config = st.selectbox("Crew configuration",
-                                                ["3-Person Crew", "4-Person Crew", "5-Person Crew"],
-                                                key="crew_config")
-
-                crew_notes = st.text_area(
-                    "Additional notes / assignor feedback (optional)",
-                    height=90,
-                    placeholder=(
-                        "e.g. 'BJ had a late whistle on the punt in Q2. "
-                        "Focus on dead-ball officiating after touchdowns.' "
-                        "Or leave blank for a general crew evaluation."
-                    ),
-                    key="crew_notes",
-                )
-
-                if st.button("🎞️ Extract Frames & Run Crew Evaluation",
-                             use_container_width=True, key="crew_extract_run"):
-                    if not api_key_ok():
-                        st.warning("Enter your API key first.")
-                    else:
-                        with st.spinner(f"Extracting frames at {crew_fps} fps…"):
-                            try:
-                                suffix = ".mp4" if crew_vid.name.lower().endswith(".mp4") else ".mov"
-                                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                                    tmp.write(crew_vid.read()); tmp_path = tmp.name
-                                frames = extract_frames(tmp_path, fps=crew_fps)
-                                os.unlink(tmp_path)
-                                if not frames:
-                                    st.error("No frames extracted.")
-                                else:
-                                    st.session_state.ah_crew_frames = frames
-                                    st.session_state.ah_crew_frame_count = len(frames)
-                                    st.session_state.ah_crew_video_name = crew_vid.name
-                                    st.success(f"✅ {len(frames)} frames extracted. Running evaluation…")
-                            except Exception as e:
-                                st.error(f"❌ Extraction failed: {e}")
-                                st.session_state.ah_crew_frame_count = 0
-
-                        if st.session_state.ah_crew_frame_count > 0:
-                            frames = st.session_state.ah_crew_frames
-                            n = len(frames)
-                            # Use all frames (capped at 40 to manage cost)
-                            cap = min(n, 40)
-                            notes_str = f"\nAssignor notes: {crew_notes.strip()}" if crew_notes.strip() else ""
-                            crew_q = (
-                                f"Please perform a full crew evaluation of this game film.\n"
-                                f"Clip: {crew_vid.name}\n"
-                                f"Crew configuration: {crew_config}\n"
-                                f"Frames analyzed: 1–{cap} of {n} total{notes_str}\n\n"
-                                f"Analyze all visible officials for positioning, call accuracy, "
-                                f"mechanics execution, dead-ball officiating, and communication. "
-                                f"Provide specific frame citations throughout. "
-                                f"Begin with a thorough VISIBILITY CHECK."
-                            )
-                            content_blocks = build_vision_content(
-                                frames, 0, cap - 1, crew_q, crew_vid.name, crew_fps,
-                                preamble_extra=(
-                                    "This is a full crew evaluation. "
-                                    "Begin with VISIBILITY CHECK. "
-                                    "Analyze every visible official with specific frame citations."
-                                )
-                            )
-                            if not spend_frames(cap):
-                                st.stop()
-                            st.markdown("---")
-                            st.markdown("#### 📊 Crew Evaluation Report")
-                            client = make_client(); ph = st.empty(); full_ce = ""
-                            try:
-                                with st.spinner(f"Analyzing {cap} frames for crew evaluation… "
-                                                f"(30–120 seconds)"):
-                                    for chunk in stream_vision(client, content_blocks, CREW_EVAL_PROMPT):
-                                        full_ce += chunk; ph.markdown(full_ce + "▌")
-                                ph.markdown(full_ce)
-                                st.session_state.ah_crew_result = full_ce
-                            except Exception as e:
-                                st.error(handle_api_error(e))
-
-            # Show previous result + export
-            if st.session_state.ah_crew_result:
-                st.markdown("---")
-                with st.expander("📄 Crew Evaluation Report", expanded=True):
-                    st.markdown(st.session_state.ah_crew_result)
-
-                st.markdown("**Export Report**")
-                ex1, ex2, ex3 = st.columns(3)
-                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                with ex1:
-                    st.download_button("⬇️ Download TXT",
-                                       data=st.session_state.ah_crew_result,
-                                       file_name=f"crew_eval_{ts}.txt",
-                                       mime="text/plain", use_container_width=True)
-                with ex2:
-                    pdf_b = markdown_to_pdf_bytes(st.session_state.ah_crew_result,
-                                                   "Crew Evaluation Report")
-                    if pdf_b:
-                        st.download_button("⬇️ Export PDF",
-                                           data=pdf_b, file_name=f"crew_eval_{ts}.pdf",
-                                           mime="application/pdf", use_container_width=True)
-                    else:
-                        st.caption("💡 `pip install fpdf2` for PDF export")
-                with ex3:
-                    if st.button("🗑️ Clear Report", use_container_width=True, key="crew_clear"):
-                        st.session_state.ah_crew_result = ""
-                        st.session_state.ah_crew_frame_count = 0
-                        st.rerun()
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SUB: REF EVAL
-    # Video upload + position dropdown → focused single-official report
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    elif st.session_state.ah_sub == "ref":
-        st.markdown("### 🏈 Individual Referee Evaluation")
-        st.markdown("Upload game film and choose the specific official to evaluate. "
-                    "The report focuses exclusively on that position.")
-
-        if not OPENCV_AVAILABLE:
-            st.error("opencv-python-headless is required. Run: `pip install opencv-python-headless`")
-        else:
-            ref_vid = st.file_uploader("ref_vid", type=["mp4", "mov"],
-                                        label_visibility="collapsed", key="ah_ref_uploader")
-
-            if ref_vid:
-                rv1, rv2 = st.columns(2)
-                with rv1:
-                    ref_position = st.selectbox(
-                        "Official to evaluate",
-                        options=["Referee (R)", "Umpire (U)", "Line Judge (LJ)",
-                                 "Down Judge (DJ)", "Back Judge (BJ)",
-                                 "Side Judge (SJ)", "Field Judge (FJ)"],
-                        key="ref_position_sel",
-                    )
-                    ref_fps = st.select_slider("ref_fps", options=[0.5, 1.0, 2.0], value=1.0,
-                                               key="ref_fps_slider")
-                with rv2:
-                    ref_crew_size = st.selectbox("Crew configuration",
-                                                  ["3-Person Crew", "4-Person Crew", "5-Person Crew"],
-                                                  key="ref_crew_size")
-                    st.caption(f"At {ref_fps} fps, a 60s clip → ~{int(60*ref_fps)} frames")
-
-                ref_notes = st.text_area(
-                    "Assignor notes / specific focus (optional)",
-                    height=80,
-                    placeholder=(
-                        "e.g. 'Check BJ positioning depth on every punt play.' "
-                        "Or 'Referee had two incorrect penalty signals — evaluate signal mechanics.'"
-                    ),
-                    key="ref_notes",
-                )
-
-                if st.button(f"🎞️ Extract Frames & Evaluate {ref_position}",
-                             use_container_width=True, key="ref_extract_run"):
-                    if not api_key_ok():
-                        st.warning("Enter your API key first.")
-                    else:
-                        with st.spinner(f"Extracting frames at {ref_fps} fps…"):
-                            try:
-                                suffix = ".mp4" if ref_vid.name.lower().endswith(".mp4") else ".mov"
-                                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                                    tmp.write(ref_vid.read()); tmp_path = tmp.name
-                                frames = extract_frames(tmp_path, fps=ref_fps)
-                                os.unlink(tmp_path)
-                                if not frames:
-                                    st.error("No frames extracted.")
-                                else:
-                                    st.session_state.ah_ref_frames = frames
-                                    st.session_state.ah_ref_frame_count = len(frames)
-                                    st.session_state.ah_ref_video_name = ref_vid.name
-                                    st.success(f"✅ {len(frames)} frames extracted. Running evaluation…")
-                            except Exception as e:
-                                st.error(f"❌ Extraction failed: {e}")
-                                st.session_state.ah_ref_frame_count = 0
-
-                        if st.session_state.ah_ref_frame_count > 0:
-                            frames = st.session_state.ah_ref_frames
-                            n = len(frames)
-                            cap = min(n, 40)
-                            notes_str = f"\nAssignor notes: {ref_notes.strip()}" if ref_notes.strip() else ""
-                            ref_q = (
-                                f"Evaluate ONLY the {ref_position} in this game film.\n"
-                                f"Clip: {ref_vid.name}\n"
-                                f"Crew configuration: {ref_crew_size}\n"
-                                f"Frames: 1–{cap} of {n} total{notes_str}\n\n"
-                                f"Focus entirely on this one official. "
-                                f"Ignore other officials unless their actions directly affect this official's responsibilities. "
-                                f"Cite specific frames and NFHS/MSHSL mechanics throughout. "
-                                f"Begin with VISIBILITY CHECK for this position only."
-                            )
-                            content_blocks = build_vision_content(
-                                frames, 0, cap - 1, ref_q, ref_vid.name, ref_fps,
-                                preamble_extra=(
-                                    f"Focused evaluation of {ref_position} ONLY. "
-                                    "Begin with VISIBILITY CHECK for this position."
-                                )
-                            )
-                            if not spend_frames(cap):
-                                st.stop()
-                            st.markdown("---")
-                            st.markdown(f"#### 📊 {ref_position} Evaluation Report")
-                            client = make_client(); ph = st.empty(); full_re = ""
-                            try:
-                                with st.spinner(f"Analyzing {cap} frames for {ref_position}… "
-                                                f"(30–120 seconds)"):
-                                    for chunk in stream_vision(client, content_blocks, REF_EVAL_PROMPT):
-                                        full_re += chunk; ph.markdown(full_re + "▌")
-                                ph.markdown(full_re)
-                                st.session_state.ah_ref_result = full_re
-                            except Exception as e:
-                                st.error(handle_api_error(e))
-
-            # Show previous result + export
-            if st.session_state.ah_ref_result:
-                st.markdown("---")
-                with st.expander("📄 Individual Ref Evaluation Report", expanded=True):
-                    st.markdown(st.session_state.ah_ref_result)
-
-                st.markdown("**Export Report**")
-                ex1, ex2, ex3 = st.columns(3)
-                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                with ex1:
-                    st.download_button("⬇️ Download TXT",
-                                       data=st.session_state.ah_ref_result,
-                                       file_name=f"ref_eval_{ts}.txt",
-                                       mime="text/plain", use_container_width=True)
-                with ex2:
-                    pdf_b = markdown_to_pdf_bytes(st.session_state.ah_ref_result,
-                                                   "Individual Referee Evaluation Report")
-                    if pdf_b:
-                        st.download_button("⬇️ Export PDF",
-                                           data=pdf_b, file_name=f"ref_eval_{ts}.pdf",
-                                           mime="application/pdf", use_container_width=True)
-                    else:
-                        st.caption("💡 `pip install fpdf2` for PDF export")
-                with ex3:
-                    if st.button("🗑️ Clear Report", use_container_width=True, key="ref_clear"):
-                        st.session_state.ah_ref_result = ""
-                        st.session_state.ah_ref_frame_count = 0
-                        st.rerun()
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SUB: PRE-GAME MEETING
-    # Auto-generate agenda from CORE_KNOWLEDGE + custom notes → PDF + DOCX
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    elif st.session_state.ah_sub == "pregame":
+    # ═══════════════════════════════════════════════════════════════════════
+    # SECTION 1 — PRE-GAME MEETING
+    # ═══════════════════════════════════════════════════════════════════════
+    if st.session_state.ah_sub == "pregame":
         st.markdown("### 📅 Pre-Game Meeting Agenda Generator")
         st.markdown(
             "Auto-generates a pre-game agenda from the RefBuddy Knowledge Base, "
@@ -3201,21 +2985,22 @@ with tab_ah:
 
         pg1, pg2 = st.columns(2)
         with pg1:
-            pg_crew = st.selectbox("Crew size", ["3-Person Crew", "4-Person Crew", "5-Person Crew"],
+            pg_crew = st.selectbox("Crew size",
+                                    ["3-Person Crew", "4-Person Crew", "5-Person Crew"],
                                     key="pg_crew_sel")
             pg_level = st.selectbox("Game level",
                                      ["Varsity", "Junior Varsity", "9th Grade", "Playoff"],
                                      key="pg_level_sel")
         with pg2:
             pg_date = st.text_input("Game date (optional)",
-                                     placeholder="e.g. Friday, September 12, 2025",
+                                     placeholder="e.g. Friday, September 4",
                                      key="pg_date")
             pg_teams = st.text_input("Teams (optional)",
                                       placeholder="e.g. Eden Prairie vs Wayzata",
                                       key="pg_teams")
 
         pg_focus = st.multiselect(
-            "Additional emphasis topics (optional — will be included in agenda)",
+            "Additional emphasis topics (optional)",
             options=["2026 Rule Changes", "Mercy Rule Procedure", "Overtime Procedure",
                      "Targeting/Defenseless Players", "Onside Kick Readiness",
                      "Goal Line Mechanics", "Penalty Reporting", "Equipment Checks",
@@ -3227,154 +3012,241 @@ with tab_ah:
         pg_assignor_notes = st.text_area(
             "Assignor's Custom Notes / Emphasis",
             height=130,
-            placeholder=(
-                "Add anything you want to emphasize for THIS specific game or crew:\n\n"
-                "• 'This crew had whistle issues last week — stress whistle discipline'\n"
-                "• 'Host school has visible play clock — review BJ clock signal protocol'\n"
-                "• 'New official on crew (Down Judge) — walk through measurement procedure'\n"
-                "• 'Watch for #52 on dark jerseys — has history of trash talking'\n"
-                "• Any other game-specific or crew-specific notes..."
-            ),
+            placeholder="Add anything you want to emphasize for this game",
             key="pg_assignor_notes",
         )
 
-        if st.button("📅 Generate Pre-Game Meeting Agenda",
-                     use_container_width=True, key="pg_generate"):
-            if not api_key_ok():
-                st.warning("⚠️ Enter your API key first.")
-            else:
-                focus_str = (f"Additional emphasis topics requested: {', '.join(pg_focus)}\n"
-                             if pg_focus else "")
-                header_str = ""
-                if pg_date or pg_teams:
-                    header_str = (f"Game: {pg_teams or 'TBD'} | "
-                                  f"Date: {pg_date or 'TBD'} | {pg_level}\n")
+        if st.button("📅  Generate Pre-Game Meeting Agenda",
+                     type="primary", use_container_width=True, key="pg_generate"):
+            focus_str = (f"Additional emphasis topics requested: {', '.join(pg_focus)}\n"
+                         if pg_focus else "")
+            header_str = ""
+            if pg_date or pg_teams:
+                header_str = (f"Game: {pg_teams or 'TBD'} | "
+                              f"Date: {pg_date or 'TBD'} | {pg_level}\n")
 
-                # Build assignor notes section — preserve line breaks as bullets
-                # so multi-line notes aren't jumbled into a run-on sentence in the output
-                if pg_assignor_notes.strip():
-                    raw_lines = [l.strip() for l in pg_assignor_notes.strip().splitlines()
-                                 if l.strip()]
-                    if len(raw_lines) == 1:
-                        # Single line — use as-is
-                        notes_section = raw_lines[0]
-                    else:
-                        # Multiple lines — format each as a bullet so Claude reproduces them
-                        # as separate items rather than concatenating them
-                        notes_section = "\n".join(f"- {ln.lstrip('-* ').strip()}"
-                                                   for ln in raw_lines)
+            # Preserve line breaks from the notes box as separate bullets so
+            # multi-line notes are not run together in the agenda
+            if pg_assignor_notes.strip():
+                raw_lines = [l.strip() for l in pg_assignor_notes.strip().splitlines()
+                             if l.strip()]
+                if len(raw_lines) == 1:
+                    notes_section = raw_lines[0]
                 else:
-                    notes_section = "(No specific assignor notes provided for this game.)"
+                    notes_section = "\n".join(f"- {ln.lstrip('-* ').strip()}"
+                                               for ln in raw_lines)
+            else:
+                notes_section = "(No specific assignor notes provided for this game.)"
 
-                prompt = (
-                    f"Generate a pre-game meeting agenda for the following game.\n\n"
-                    f"{header_str}"
-                    f"Crew configuration: {pg_crew}\n"
-                    f"Game level: {pg_level}\n"
-                    f"{focus_str}\n"
-                    f"For Section 4 (Assignor's Custom Notes), use EXACTLY this content "
-                    f"verbatim — do not summarize or rephrase it:\n"
-                    f"{notes_section}\n\n"
-                    f"Generate the full agenda following your system prompt structure. "
-                    f"Make Sections 1-3 and 5 thorough and specific. "
-                    f"Section 4 must contain the assignor notes exactly as written above."
-                )
+            prompt = (
+                f"Generate a pre-game meeting agenda for the following game.\n\n"
+                f"{header_str}"
+                f"Crew configuration: {pg_crew}\n"
+                f"Game level: {pg_level}\n"
+                f"{focus_str}\n"
+                f"For the Assignor Notes section, use EXACTLY this content verbatim — "
+                f"do not summarize or rephrase it:\n{notes_section}\n\n"
+                f"Generate the full agenda following your system prompt structure."
+            )
 
-                with st.spinner("Generating pre-game meeting agenda… (15–30 seconds)"):
-                    try:
-                        result = call_api_sync(prompt, PREGAME_MEETING_PROMPT, max_tokens=3000)
-                        st.session_state.ah_pregame_result = result
-                        # Auto-save log entry
-                        st.session_state.ah_pregame_logs.append({
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "teams": pg_teams or "Unknown",
-                            "date": pg_date or "Unknown",
-                            "crew": pg_crew,
-                            "level": pg_level,
-                            "result": result,
-                        })
-                    except Exception as e:
-                        st.error(handle_api_error(e))
+            with st.spinner("Generating pre-game meeting agenda… (15–30 seconds)"):
+                try:
+                    result = call_api_sync(prompt, PREGAME_MEETING_PROMPT, max_tokens=3000)
+                    st.session_state.ah_pregame_result = result
+                    st.session_state.ah_pregame_logs.append({
+                        "timestamp": datetime.datetime.now().isoformat(),
+                        "teams": pg_teams or "Unknown", "date": pg_date or "Unknown",
+                        "crew": pg_crew, "level": pg_level, "result": result,
+                    })
+                except Exception as e:
+                    st.error(handle_api_error(e))
 
-        # Display agenda + export buttons
         if st.session_state.ah_pregame_result:
             st.markdown("---")
-            st.markdown("### Generated Pre-Game Meeting Agenda")
-
+            st.markdown("### Generated Agenda")
             with st.expander("📋 View Full Agenda", expanded=True):
                 st.markdown(st.session_state.ah_pregame_result)
 
-            st.markdown("**Export Agenda**")
-            export1, export2, export3, export4 = st.columns(4)
+            st.markdown("**Export**")
+            x1, x2, x3, x4 = st.columns(4)
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            safe_teams = (pg_teams or "game").replace(" ", "_").replace("/", "-")[:25]
-            title_str = f"Pre-Game Meeting Agenda — {pg_teams or 'Game'} — {pg_date or ts}"
-
-            with export1:
-                st.download_button(
-                    "⬇️ Download TXT",
-                    data=st.session_state.ah_pregame_result,
-                    file_name=f"pregame_{safe_teams}_{ts}.txt",
-                    mime="text/plain", use_container_width=True,
-                )
-            with export2:
-                pdf_b = markdown_to_pdf_bytes(st.session_state.ah_pregame_result, title_str)
-                if pdf_b:
+            safe = (st.session_state.get("pg_teams") or "game").replace(" ", "_")[:25]
+            title = f"Pre-Game Meeting Agenda — {st.session_state.get('pg_teams') or 'Game'}"
+            with x1:
+                st.download_button("⬇️ TXT", data=st.session_state.ah_pregame_result,
+                                   file_name=f"pregame_{safe}_{ts}.txt",
+                                   mime="text/plain", use_container_width=True)
+            with x2:
+                _p = markdown_to_pdf_bytes(st.session_state.ah_pregame_result, title)
+                if _p:
+                    st.download_button("⬇️ PDF", data=_p,
+                                       file_name=f"pregame_{safe}_{ts}.pdf",
+                                       mime="application/pdf", use_container_width=True)
+            with x3:
+                _d = markdown_to_docx_bytes(st.session_state.ah_pregame_result, title)
+                if _d:
                     st.download_button(
-                        "⬇️ Export PDF",
-                        data=pdf_b,
-                        file_name=f"pregame_{safe_teams}_{ts}.pdf",
-                        mime="application/pdf", use_container_width=True,
-                    )
-                else:
-                    st.caption("💡 `pip install fpdf2` for PDF")
-            with export3:
-                docx_b = markdown_to_docx_bytes(st.session_state.ah_pregame_result, title_str)
-                if docx_b:
-                    st.download_button(
-                        "⬇️ Export Word (.docx)",
-                        data=docx_b,
-                        file_name=f"pregame_{safe_teams}_{ts}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        use_container_width=True,
-                    )
-                else:
-                    st.caption("💡 `pip install python-docx` for Word")
-            with export4:
-                if st.button("🗑️ Clear Agenda", use_container_width=True, key="pg_clear"):
+                        "⬇️ Word", data=_d, file_name=f"pregame_{safe}_{ts}.docx",
+                        mime=("application/vnd.openxmlformats-officedocument"
+                              ".wordprocessingml.document"),
+                        use_container_width=True)
+            with x4:
+                if st.button("🗑️ Clear", use_container_width=True, key="pg_clear"):
                     st.session_state.ah_pregame_result = ""
                     st.rerun()
 
-            # Log history
-            if len(st.session_state.ah_pregame_logs) > 1:
-                with st.expander(f"📁 Agenda History ({len(st.session_state.ah_pregame_logs)} generated)",
-                                 expanded=False):
-                    for i, log in enumerate(reversed(st.session_state.ah_pregame_logs)):
-                        st.markdown(f"**{log['teams']}** | {log['date']} | "
-                                    f"{log['crew']} | {log['timestamp'][:19]}")
-                        with st.expander("View", expanded=False):
-                            st.markdown(log["result"])
-                        if i < len(st.session_state.ah_pregame_logs) - 1:
-                            st.markdown("---")
+    # ═══════════════════════════════════════════════════════════════════════
+    # SECTION 2 — EVALUATIONS  (crew + individual, photos or video)
+    # ═══════════════════════════════════════════════════════════════════════
+    elif st.session_state.ah_sub == "eval":
+        st.markdown("### 🎬 Crew & Official Evaluations")
+        st.markdown(
+            "Upload photos or a clip, choose whether you're evaluating the whole "
+            "crew or one official, and RefBuddy produces a scored report with "
+            "rule citations and coaching points."
+        )
 
-        else:
+        ev_uploads = st.file_uploader(
+            "ev_upload",
+            type=["jpg", "jpeg", "png", "mp4", "mov"],
+            accept_multiple_files=True,
+            label_visibility="collapsed",
+            key="ah_ev_uploader",
+        )
+        st.caption("📸 Photos (JPG/PNG) or 🎥 video (MP4/MOV). Photos upload faster "
+                   "and are usually enough — try pre-snap, at the snap, and the "
+                   "moment of the foul.")
+
+        e1, e2 = st.columns(2)
+        with e1:
+            ev_scope = st.selectbox(
+                "Evaluate",
+                options=["Full Crew (Overall)", "Referee (R)", "Umpire (U)",
+                         "Line Judge (LJ)", "Down Judge (DJ)", "Back Judge (BJ)",
+                         "Side Judge (SJ)", "Field Judge (FJ)"],
+                key="ev_scope",
+            )
+        with e2:
+            ev_crew = st.selectbox(
+                "Crew configuration",
+                ["3-Person Crew", "4-Person Crew", "5-Person Crew"],
+                key="ev_crew",
+            )
+
+        ev_fps = 1.0
+        if ev_uploads and any(f.name.lower().endswith((".mp4", ".mov")) for f in ev_uploads):
+            ev_fps = st.select_slider(
+                "Video sampling rate (frames per second)",
+                options=[0.5, 1.0, 2.0], value=1.0, key="ev_fps",
+            )
+
+        ev_notes = st.text_area(
+            "Notes / focus (optional)", height=90,
+            placeholder="e.g. 'Check BJ depth on the punt.' or "
+                        "'A flag was thrown here — was it correct?'",
+            key="ev_notes",
+        )
+
+        is_crew = ev_scope.startswith("Full Crew")
+        btn_label = ("🎬  Generate Crew Evaluation" if is_crew
+                     else f"🏈  Generate {ev_scope} Evaluation")
+
+        if st.button(btn_label, type="primary", use_container_width=True,
+                     disabled=not ev_uploads, key="ev_run"):
+            frames = []
+            with st.spinner("Processing upload…"):
+                for f in ev_uploads:
+                    if f.name.lower().endswith((".jpg", ".jpeg", ".png")):
+                        b = image_to_frame_b64(f)
+                        if b:
+                            frames.append(b)
+                    else:
+                        if not OPENCV_AVAILABLE:
+                            st.error("Video requires opencv-python-headless.")
+                            break
+                        try:
+                            sfx = ".mp4" if f.name.lower().endswith(".mp4") else ".mov"
+                            with tempfile.NamedTemporaryFile(delete=False, suffix=sfx) as t:
+                                t.write(f.read()); tp = t.name
+                            frames.extend(extract_frames(tp, fps=ev_fps))
+                            os.unlink(tp)
+                        except Exception as e:
+                            st.error(f"❌ Could not process {f.name}: {e}")
+
+            if not frames:
+                st.error("Nothing could be read from that upload.")
+            else:
+                cap = min(len(frames), 40)
+                if spend_frames(cap):
+                    name = ", ".join(f.name for f in ev_uploads[:3])
+                    extra = f"\nNotes: {ev_notes.strip()}" if ev_notes.strip() else ""
+                    if is_crew:
+                        q = (f"Perform a full crew evaluation.\nSource: {name}\n"
+                             f"Crew configuration: {ev_crew}\n"
+                             f"Images analyzed: 1–{cap} of {len(frames)}{extra}\n\n"
+                             f"Analyze all visible officials for positioning, call "
+                             f"accuracy, mechanics, dead-ball officiating and "
+                             f"communication. Begin with a VISIBILITY CHECK.")
+                        prompt_used = CREW_EVAL_PROMPT
+                        heading = "📊 Crew Evaluation Report"
+                    else:
+                        q = (f"Evaluate ONLY the {ev_scope} in this material.\n"
+                             f"Source: {name}\nCrew configuration: {ev_crew}\n"
+                             f"Images analyzed: 1–{cap} of {len(frames)}{extra}\n\n"
+                             f"Focus entirely on this one official. Ignore others unless "
+                             f"their actions directly affect this official's "
+                             f"responsibilities. Begin with a VISIBILITY CHECK for this "
+                             f"position only.")
+                        prompt_used = REF_EVAL_PROMPT
+                        heading = f"📊 {ev_scope} Evaluation Report"
+
+                    blocks = build_vision_content(
+                        frames, 0, cap - 1, q, name, ev_fps,
+                        preamble_extra=("These may be still photos rather than "
+                                        "sequential video frames. Visibility Check "
+                                        "is the mandatory first section."),
+                    )
+                    st.markdown("---")
+                    st.markdown(f"#### {heading}")
+                    ph = st.empty(); full = ""
+                    try:
+                        with st.spinner(f"Analyzing {cap} image(s)… (30–120 seconds)"):
+                            for chunk in stream_vision(make_client(), blocks, prompt_used):
+                                full += chunk; ph.markdown(full + "▌")
+                        ph.markdown(full)
+                        st.session_state.ah_eval_result = full
+                        st.session_state.ah_eval_scope = ev_scope
+                    except Exception as e:
+                        st.error(handle_api_error(e))
+
+        if st.session_state.get("ah_eval_result"):
             st.markdown("---")
-            st.markdown("""<div class="rb-card">
-            <h4 style="color:#003087;margin-top:0;">What Gets Auto-Generated</h4>
-            <ul style="color:#1F2937;line-height:2.0;">
-            <li><strong>Section 1: 2026 Rule Changes & Points of Emphasis</strong> — every 2026 change with rule numbers</li>
-            <li><strong>Section 2: Key Mechanics Reminders</strong> — kickoff, punts, goal line, clock, signals</li>
-            <li><strong>Section 3: High-Priority Situations</strong> — targeting, 12-man, mercy rule, equipment</li>
-            <li><strong>Section 4: Assignor's Custom Notes</strong> — your notes, verbatim, clearly separated</li>
-            <li><strong>Section 5: Discussion Questions</strong> — 5 scenario questions from CORE_KNOWLEDGE</li>
-            </ul>
-            <p style="color:#4B5563;font-size:0.85rem;margin-bottom:0;">
-            Export to TXT, PDF, or Word. Agenda is automatically saved to history.
-            </p></div>""", unsafe_allow_html=True)
+            with st.expander("📄 Evaluation Report", expanded=True):
+                st.markdown(st.session_state.ah_eval_result)
+
+            st.markdown("**Export**")
+            z1, z2, z3 = st.columns(3)
+            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            with z1:
+                st.download_button("⬇️ TXT", data=st.session_state.ah_eval_result,
+                                   file_name=f"evaluation_{ts}.txt",
+                                   mime="text/plain", use_container_width=True)
+            with z2:
+                _p = markdown_to_pdf_bytes(
+                    st.session_state.ah_eval_result,
+                    f"{st.session_state.get('ah_eval_scope','')} Evaluation Report")
+                if _p:
+                    st.download_button("⬇️ PDF", data=_p,
+                                       file_name=f"evaluation_{ts}.pdf",
+                                       mime="application/pdf",
+                                       use_container_width=True)
+            with z3:
+                if st.button("🗑️ Clear", use_container_width=True, key="ev_clear"):
+                    st.session_state.ah_eval_result = ""
+                    st.rerun()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 5 — QUIZ & DRILLS (v2.5: improved variety, 50/50 TF/MC, de-duplication)
+
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab_quiz:
