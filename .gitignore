@@ -1,0 +1,59 @@
+# ── SECRETS — never commit these ─────────────────────────────────────────────
+.streamlit/secrets.toml
+secrets.toml
+.env
+.env.*
+*.pem
+*.key
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Virtual environments ─────────────────────────────────────────────────────
+venv/
+venv314/
+env/
+ENV/
+.venv/
+
+# ── Streamlit ────────────────────────────────────────────────────────────────
+.streamlit/cache/
+
+# ── Media / scratch (keep repo small — Render has size limits) ───────────────
+*.mp4
+*.mov
+*.avi
+*.mkv
+clips/
+film/
+scratch/
+
+# ── Generated outputs ────────────────────────────────────────────────────────
+*.pdf
+*.docx
+refbuddy_*.json
+refgrade_*.json
+pregame_*.txt
+
+# ── Source rulebooks — DO NOT COMMIT (copyrighted third-party PDFs) ──────────
+*.pdf
+rulebooks/
+nfhs/
+mshsl/
+
+# ── OS / editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

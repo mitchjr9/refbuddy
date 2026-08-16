@@ -1,0 +1,5 @@
+anthropic
+streamlit
+opencv-python-headless
+fpdf2
+python-docx
