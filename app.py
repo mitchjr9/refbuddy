@@ -2567,7 +2567,7 @@ with tab_home:
 
     # ── Single chat input — Streamlit pins this to the bottom of the viewport ─
     user_in = st.chat_input(
-        "Ask anything about NFHS/MSHSL rules, game situations, or your notes…",
+        "Ask RefBuddy a question",
     )
     if user_in:
         st.session_state.messages.append({
