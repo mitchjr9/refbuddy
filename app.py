@@ -1,6 +1,23 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
-Version 3.5 — Film & Grade Merge + Photo Upload + Claude Branding
+Version 3.6 — UI Polish (logo size, expander/uploader contrast, Quiz rename)
+
+Changes from v3.5:
+  - Claude logo enlarged 26px → 46px; "Powered by" bumped to 1.05rem and
+    vertically centred against it.
+  - Removed the "Prompt caching active" sidebar caption (caching still on —
+    it just does not need to be user-facing).
+  - NEW CSS Layer 3: pins expanders and the file uploader to the light theme.
+    Root cause of the black bars was that the old ".streamlit-expanderHeader"
+    class no longer exists in current Streamlit; those components fell through
+    to Streamlit's own dark tokens on hover/focus/open. Now targeted via
+    [data-testid="stExpander"] and [data-testid="stFileUploaderDropzone"]
+    across every interaction state, including the chevron icon and the
+    "200MB per file" helper text.
+  - "Quiz & Drills" renamed to "Quiz" (tab label, heading, home chip) and the
+    description reworded to drop the internal CORE_KNOWLEDGE reference.
+
+Prior — Version 3.5 — Film & Grade Merge + Photo Upload + Claude Branding
 
 Changes from v3.4:
   - TABS 5 → 4: Game Film and RefGrade merged into a single "🎬 Film & Grade"
@@ -81,7 +98,7 @@ Changes from v3.0:
   - Forward fumble OOB 2025 rule fully documented with beanbag note
   - All v3.0 features (secrets-only API key, hard-coded Sonnet, light dropdowns) preserved
 
-Tabs: 🏈 Home | 🎬 Game Film | 📊 RefGrade | 👥 Assignor Hub | 📝 Quiz & Drills
+Tabs: 🏈 Home | 🎬 Film & Grade | 👥 Assignor Hub | 📝 Quiz
 Run:  streamlit run app_v2.py
 """
 
@@ -1214,6 +1231,92 @@ footer {{ visibility: hidden; }}
 """, unsafe_allow_html=True)
 
 
+# ── Layer 3: v3.6 component fixes — expanders & file uploader ────────────────
+# Newer Streamlit renders expanders as <details data-testid="stExpander"> and
+# the uploader dropzone as [data-testid="stFileUploaderDropzone"]. The old
+# ".streamlit-expanderHeader" class no longer exists, so those components were
+# falling back to Streamlit's own dark tokens — the black bars you'd see after
+# clicking. These rules pin both to the light theme in EVERY state.
+st.markdown("""
+<style>
+    /* ── Expanders (Terms of Use, previews, log history) ─────────────── */
+    [data-testid="stExpander"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #DDE3F0 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stExpander"] details,
+    [data-testid="stExpander"] details[open] {
+        background-color: #FFFFFF !important;
+    }
+    /* The clickable header, in every interaction state */
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] summary:hover,
+    [data-testid="stExpander"] summary:focus,
+    [data-testid="stExpander"] summary:active,
+    [data-testid="stExpander"] summary:focus-visible,
+    [data-testid="stExpander"] details[open] > summary,
+    details > summary {
+        background-color: #EEF2FF !important;
+        color: #1F2937 !important;
+        border-radius: 8px !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    [data-testid="stExpander"] summary:hover {
+        background-color: #E2E8F0 !important;
+    }
+    /* Header label text + chevron icon */
+    [data-testid="stExpander"] summary p,
+    [data-testid="stExpander"] summary span,
+    [data-testid="stExpander"] summary div,
+    [data-testid="stExpanderToggleIcon"] {
+        color: #1F2937 !important;
+        fill: #1F2937 !important;
+    }
+    [data-testid="stExpander"] summary svg {
+        fill: #1F2937 !important;
+        color: #1F2937 !important;
+    }
+    /* Expanded body */
+    [data-testid="stExpanderDetails"],
+    [data-testid="stExpanderDetails"] p,
+    [data-testid="stExpanderDetails"] li,
+    [data-testid="stExpanderDetails"] span,
+    [data-testid="stExpanderDetails"] h4 {
+        background-color: #FFFFFF !important;
+        color: #1F2937 !important;
+    }
+
+    /* ── File uploader dropzone ──────────────────────────────────────── */
+    [data-testid="stFileUploaderDropzone"] {
+        background-color: #EEF2FF !important;
+        border: 2px dashed #1E56A0 !important;
+        border-radius: 10px !important;
+    }
+    /* "200MB per file • PDF, JPG, PNG..." helper text */
+    [data-testid="stFileUploaderDropzoneInstructions"],
+    [data-testid="stFileUploaderDropzoneInstructions"] *,
+    [data-testid="stFileUploaderDropzone"] span,
+    [data-testid="stFileUploaderDropzone"] small,
+    [data-testid="stFileUploaderDropzone"] div,
+    [data-testid="stFileUploader"] small {
+        color: #1F2937 !important;
+        background-color: transparent !important;
+    }
+    [data-testid="stFileUploaderDropzone"] svg {
+        fill: #003087 !important;
+    }
+    /* Uploaded-file chips listed under the dropzone */
+    [data-testid="stFileUploaderFile"],
+    [data-testid="stFileUploaderFile"] * {
+        background-color: #FFFFFF !important;
+        color: #1F2937 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 # =============================================================================
 # ACCESS GATE  (v3.2)
 # Shared-password login. Protects your Anthropic API key from public abuse.
@@ -2082,11 +2185,12 @@ with st.sidebar:
     _claude_uri = _asset_data_uri("Claude.png")
     if _claude_uri:
         st.markdown(
-            '<div style="display:flex;align-items:center;gap:10px;'
-            'margin:0.5rem 0 0.2rem 0;">'
-            '<span style="color:#1F2937;font-weight:700;font-size:0.9rem;">'
-            'Powered by</span>'
-            f'<img src="{_claude_uri}" alt="Claude" style="height:26px;">'
+            '<div style="display:flex;align-items:center;gap:12px;'
+            'flex-wrap:wrap;margin:0.7rem 0 0.4rem 0;">'
+            '<span style="color:#1F2937;font-weight:700;font-size:1.05rem;'
+            'line-height:1;">Powered by</span>'
+            f'<img src="{_claude_uri}" alt="Claude" '
+            'style="height:46px;width:auto;display:block;">'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2108,7 +2212,6 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("**Knowledge Base**")
-    st.caption("⚡ Prompt caching active — repeat calls ~90% cheaper")
     st.caption("Years of NFHS veteran officials' game notes and NFHS/MSHSL rulebook facts and interpretations")
 
     st.markdown("---")
@@ -2151,7 +2254,7 @@ tab_home, tab_film, tab_ah, tab_quiz = st.tabs([
     "🏈 Home",
     "🎬 Film & Grade",
     "👥 Assignor Hub",
-    "📝 Quiz & Drills",
+    "📝 Quiz",
 ])
 
 
@@ -2168,7 +2271,7 @@ with tab_home:
     """, unsafe_allow_html=True)
 
     chips = ["NFHS Rule Citations", "MSHSL Mods", "Penalty Enforcement",
-             "BJ · U · Wings · R", "Mercy Rule", "Film Analysis", "Quiz & Drills"]
+             "BJ · U · Wings · R", "Mercy Rule", "Film Analysis", "Quiz"]
     chip_html = " &nbsp; ".join(f'<span class="pill-blue">{c}</span>' for c in chips)
     st.markdown(f'<div style="text-align:center;margin-bottom:1.4rem;line-height:2.6;">'
                 f'{chip_html}</div>', unsafe_allow_html=True)
@@ -3103,10 +3206,10 @@ with tab_ah:
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab_quiz:
-    st.markdown("## 📝 Quiz & Drills")
-    st.markdown("Test your knowledge of NFHS rules, MSHSL modifications, mechanics, "
-                "positioning, and signals. Questions are generated from your full CORE_KNOWLEDGE "
-                "with a 50/50 mix of multiple-choice and true/false.")
+    st.markdown("## 📝 Quiz")
+    st.markdown("Test your football officiating knowledge! Questions are generated "
+                "from the RefBuddy database with a 50/50 mix of multiple-choice "
+                "and true/false.")
 
 
     # ── MODE SELECTOR ─────────────────────────────────────────────────────────
