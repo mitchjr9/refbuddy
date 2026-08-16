@@ -1,5 +1,19 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
+Version 1.0.1 — Light Theme Pinned (root-cause fix)
+
+THE FIX THAT MATTERED: added .streamlit/config.toml with base = "light".
+Until now the app shipped with no theme config, so Streamlit auto-detected the
+visitor's OS/browser colour scheme. Anyone in dark mode got Streamlit's DARK
+BaseWeb tokens applied underneath our custom CSS — the true source of the
+invisible dropdown values, black expander headers, dark uploader dropzone and
+dark password field. Every earlier CSS layer was treating symptoms.
+
+Also fixed: the selectbox rule had been applying background-color to EVERY
+descendant of the control, which painted over the selected-value text. Colour
+now applies to the subtree; background applies only to the outer control, with
+inner value containers explicitly transparent.
+
 Version 1.0 — PUBLIC RELEASE
 
 Shipped at refbuddy.ai for MSHSL football officials, August 2026.
@@ -1357,19 +1371,34 @@ st.markdown("""
 # (Safari and Chrome on macOS) — without it the text stays invisible.
 st.markdown("""
 <style>
-    /* ── Selectbox / multiselect: the CLOSED control and its selected value ── */
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div *,
-    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
-    div[data-baseweb="select"] > div,
-    div[data-baseweb="select"] > div > div,
-    div[data-baseweb="select"] input,
-    div[data-baseweb="select"] [data-baseweb="select-value"] {
+    /* ── Selectbox / multiselect ─────────────────────────────────────────
+       Colour is applied to the whole subtree; BACKGROUND is applied only to
+       the outer control. Setting a background on every descendant (an earlier
+       attempt) painted over the selected-value text and made it vanish. */
+    [data-testid="stSelectbox"] *,
+    [data-testid="stMultiSelect"] *,
+    div[data-baseweb="select"] *,
+    div[data-baseweb="select"] input {
         color: #1F2937 !important;
         -webkit-text-fill-color: #1F2937 !important;
+        opacity: 1 !important;
+    }
+    /* Background on the control surface only */
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
         background-color: #F8FAFC !important;
     }
-    /* Keep the chevron/clear icons visible */
+    /* Inner value/placeholder containers must stay transparent so the control
+       background shows through and nothing is painted over the text */
+    div[data-baseweb="select"] > div > div,
+    div[data-baseweb="select"] [data-baseweb="select-value"],
+    div[data-baseweb="select"] [class*="valueContainer"],
+    div[data-baseweb="select"] [class*="singleValue"] {
+        background-color: transparent !important;
+        color: #1F2937 !important;
+        -webkit-text-fill-color: #1F2937 !important;
+    }
+    /* Chevron / clear icons */
     div[data-baseweb="select"] svg {
         fill: #1F2937 !important;
         color: #1F2937 !important;
@@ -2333,7 +2362,7 @@ with st.sidebar:
             '<span style="color:#1F2937;font-weight:700;font-size:1.05rem;'
             'line-height:1;">Powered by</span>'
             f'<img src="{_claude_uri}" alt="Claude" '
-            'style="height:60px;width:auto;display:block;">'
+            'style="height:70px;width:auto;display:block;">'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -3351,7 +3380,7 @@ with tab_ah:
 with tab_quiz:
     st.markdown("## 📝 Quiz")
     st.markdown("Test your football officiating knowledge! Questions are generated "
-                "from the RefBuddy database with a 50/50 mix of multiple-choice "
+                "from the RefBuddy Knowledge Base with a 50/50 mix of multiple-choice "
                 "and true/false.")
 
 

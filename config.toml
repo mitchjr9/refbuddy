@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# RefBuddy — Streamlit configuration
+#
+# WHY THIS FILE MATTERS
+#
+# Without a [theme] block, Streamlit auto-detects the visitor's OS/browser
+# colour scheme. A ref opening the app on a phone in dark mode was getting
+# Streamlit's DARK theme tokens applied to every BaseWeb widget underneath our
+# custom CSS — which is what produced the invisible dropdown values, the black
+# expander headers, the dark file-uploader dropzone, and the dark password box.
+#
+# Pinning base = "light" fixes all of those at the source rather than patching
+# each widget with !important overrides.
+#
+# COMMIT THIS FILE. It is not a secret — only secrets.toml is gitignored.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[theme]
+# Force light mode regardless of the visitor's system preference
+base = "light"
+
+primaryColor = "#003087"              # football blue — buttons, focus rings, accents
+backgroundColor = "#FAFAF7"           # cream page background
+secondaryBackgroundColor = "#FFFFFF"  # sidebar, cards, widget surfaces
+textColor = "#1F2937"                 # near-black body text
+font = "sans serif"
+
+[server]
+# Render terminates TLS and proxies to the app; these keep uploads working
+maxUploadSize = 200
+enableXsrfProtection = true
+enableCORS = false
+
+[browser]
+gatherUsageStats = false
+
+[client]
+# Show a concise error message instead of a full traceback to end users
+showErrorDetails = false
+toolbarMode = "minimal"
