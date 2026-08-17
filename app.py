@@ -1,5 +1,19 @@
 """
 RefBuddy — Your Minnesota HS Football Referee Assistant & Film Coach
+Version 1.2 — GSOA 2026 Preseason Meeting Notes
+
+Changes from v1.1:
+  - CORE_KNOWLEDGE Section 5D added: GSOA 2026 preseason meeting. Covers backward
+    pitch as a muff (contrasted against the 2025 forward-fumble rule), clear-visor
+    enforcement via trainers, mercy-rule running time and what coaches may/may not
+    alter, BJ offside-on-K threshold, muffed kick into the end zone as a touchback,
+    12-in-the-huddle nuance, DPI catchability, illegal-man-downfield mechanics,
+    and full positioning detail for kickoff, scrimmage, punt and PAT/FG.
+  - Section 0 gains the 2026 change to Rules 8-2-2 through 8-2-5 (enforcement on
+    subsequent kickoff moves to the succeeding spot), plus a Quick-Reference row.
+    Practical case flagged at the meeting: DPI at the end of regulation now
+    enforced in overtime as 1st and 10 from the 25, not goal-to-go from the 10.
+
 Version 1.1 — Ref Hub Restructure + Working Presets + Stronger CTAs
 
 Changes from v1.0.1:
@@ -334,6 +348,11 @@ CORE_KNOWLEDGE = """
 - **New:** No player may use hand(s) to slap an opponent's head. This is a new, specific 15-yard personal foul.
 - **Why it matters:** Now a distinct and named foul — not just "illegal use of hands." If you see a player slap an opponent's helmet, it's Rule 9-4-7, 15 yards. Flag it immediately. Does not require twist or pull like facemask — any slap to the head is the foul.
 
+**[2026] Enforcement on Subsequent Kickoff → Succeeding Spot — Rules 8-2-2 through 8-2-5 (editorial)**
+- **Old:** A live-ball foul by the defense on a scoring play was enforced on the try or the ensuing kickoff.
+- **New:** Enforcement moves to the succeeding spot.
+- **Why it matters:** Practical effect flagged at the GSOA 2026 preseason meeting — a defensive pass interference at the end of regulation can now be enforced in overtime, giving the offense 1st and 10 from the 25 rather than 1st and goal from the 10. Know this before you need it; it comes up in a chaotic moment.
+
 **2026 Points of Emphasis:**
 1. **Flagrant and Unsportsmanlike Fouls** — Consistent enforcement. Flagrant fouls = DQ. No tolerance for taunting or postgame confrontations.
 2. **Helping the Runner** — Pushing/pulling the runner by a teammate is illegal. Watch for OL pulling QB over the pile on short yardage.
@@ -361,6 +380,7 @@ CORE_KNOWLEDGE = """
 | 1-5-3c(3) | 2025 | No audio/video recording devices on players |
 | 1-5-3c(9) | 2026 | Play cards now allowed on belt area in addition to wrist |
 | 9-4-7 | 2026 | Slap to opponent's head = new 15-yard personal foul |
+| 8-2-2 to 8-2-5 | 2026 | Enforcement on subsequent kickoff moves to succeeding spot |
 
 ---
 
@@ -660,6 +680,58 @@ CORE_KNOWLEDGE = """
 - Overtime rules — review every week
 - Forward progress segment
 - The forward-fumble-out-of-bounds rule change (2025) — revisit regularly
+
+---
+
+## 5D. GSOA PRESEASON MEETING — 2026 (most recent association meeting)
+
+### Rules points covered
+
+- **Backward pitch is a MUFF, not a fumble.** Ball goes to where it went out of bounds. Contrast this with the 2025 forward-fumble change (Rule 3-4-2d), which returns the ball to the SPOT OF THE FUMBLE. Forward fumble = spot of fumble. Backward pitch that is muffed = where it crossed the sideline.
+- **Head slap = 15-yard personal foul** (2026 Rule 9-4-7).
+- **Enforcement on subsequent kickoff moved to the succeeding spot** (Rules 8-2-2 to 8-2-5). Example given: DPI at the end of regulation can be enforced in overtime as 1st and 10 from the 25 instead of goal-to-go from the 10.
+- **Visors must be completely clear — no tint.** Framed as a concussion-management issue. Trainers know the rule; point it out to the trainer and they will handle it with the player.
+- **Running time (MSHSL mercy rule):** stops only for timeouts, injuries, penalties and scores. Running time applies only in the 4th quarter at a 35-point differential. **Coaches may agree to shorten quarters but cannot alter running versus stopped time.**
+- **Back Judge calling offside on K:** only a consideration if a K player is a full step over the kick line AND has a foot down before the ball is kicked.
+- **A muffed kick does not change the status of the kick.** If a kick is muffed and goes into the end zone, it is a touchback.
+- **12 in the huddle is permitted in high school.** Get the 12th off before the snap; count after the huddle breaks. (This refines the earlier personal note about killing 12-player situations — the foul attaches at the snap/participation, not merely to being in the huddle. When in doubt, count early and communicate.)
+- **Defensive pass interference: it does not matter whether the ball was catchable** in high school. NFHS has no catchability requirement.
+- **Illegal man downfield:** roughly 2 yards when the ball is released. Check positioning first, then whether the QB still has the ball. A lineman cannot "go back" once illegally downfield. This foul can only occur if there is a legal forward pass.
+- **A kick may be kicked twice as long as it is still behind the line of scrimmage.**
+
+### Kickoff mechanics
+
+- **Referee** is on the goal line. Read the kick and get out of the way — do not get hit in the head. Once the ball is touched in the field of play, the R winds the clock.
+- **Back Judge:** after the kick, once players clear, take a 45-degree angle to the numbers and hold.
+- **Umpire:** go straight in once K clears.
+- Both BJ and U watch **inside out**.
+
+### Scrimmage play positioning
+
+- **Umpire and Referee** line up with inside foot on the outside foot of the tackle. The free-blocking zone dictates legal passes and blocking, so this alignment matters.
+- **LOS officials:** heels on the back of the white area on the sideline (2 yards).
+- **Keys for LOS officials:** the tackle / tight end.
+- **Back Judge:** strength and key is determined by field size; if the formation is balanced, key to the chains side.
+- **R and U officiate inside out** and stay stationary until the play gets outside.
+- **LOS officials:** weak side takes backside blocks; strong side takes blocks. **Do not move at the snap** — only move if the ball is snapped 7 yards and in, or if a pass is thrown.
+
+### Punt mechanics
+
+- **U and R** still line up on the outside foot of the tackle. Both count eligible numbers in ineligible positions.
+- **Umpire:** watch for a clean snap and nearby blocks.
+- **Referee:** watch blocks, protect the kicker and snapper, and communicate kicker/snapper protection pre-snap. Once the kick is away, the R clears the punter and checks blocks. The punter is the R's responsibility; the U checks blocks.
+- **LOS officials:** initial key is a clean snap. Non-chains side releases downfield. Chains side takes snap, line, free release. Both must be aware of blocked kicks.
+- **Back Judge:** split the returners if there are two; if only one, take the chains side, 5–7 yards to the side and deep. BJ and LOS officials — and everyone — must be alert for blindside blocks.
+
+### PAT / Field goal mechanics
+
+- On a miss, the official on that side takes **three steps and signals the miss**.
+- **LOS officials:** watch formation and blocking.
+- **U and BJ** decide in advance who blows the whistle and agree on the cadence (e.g. YES YES YES) for raising hands on a good kick.
+- **LOS and R** pinch in on a good kick and watch for extracurricular activity after the play.
+- **Referee** rules on roughing the kicker or holder.
+- **If the snap is muffed / "FIRE" is called:** LOS officials get to the goal line; BJ and U watch the receivers and split to the corners if possible.
+- **Eligible receivers on FG/PAT:** the kicker, the holder, the wingbacks, and the two players on the ends of the line. Communicate eligibles and ineligibles before the snap.
 
 ---
 
