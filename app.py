@@ -1552,20 +1552,62 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* ── Multiselect chips (e.g. emphasis topics) ───────────────────────── */
+    /* ── Multiselect chips ──────────────────────────────────────────────
+       Used by "Score these categories" (Film & Grade) and "Additional
+       emphasis topics" (Pre-Game Meeting).
+
+       This Streamlit version does NOT render chips as BaseWeb tags. The real
+       structure is:
+
+           [data-testid="stMultiSelectTagsContainer"]
+             └─ element with a bare  data-tag  attribute        ← the chip
+                  ├─ label text
+                  └─ button aria-label="Remove <value>"         ← the x
+
+       A previous rule targeted span[data-baseweb="tag"], which matched zero
+       elements — so nothing was styled and the chips fell through to
+       Streamlit's own colours.
+
+       TWO RULES, AND THE SPLIT MATTERS:
+         A. The chip itself owns background AND text colour.
+         B. Descendants ONLY (via *) are forced transparent, so the inner
+            label and remove button don't paint over the chip's background.
+
+       The bare [data-tag] selector must NEVER appear in rule B. Listing it in
+       both puts two equal-specificity (0,2,0) rules in conflict, and the later
+       one wins — the navy disappears, the near-white container shows through,
+       and white text becomes invisible. There is an automated audit for this
+       exact regression. */
+
+    /* Rule A — the chip */
+    [data-testid="stMultiSelectTagsContainer"] [data-tag],
     span[data-baseweb="tag"] {
         background-color: #003087 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
         border-radius: 6px !important;
+        border: none !important;
     }
-    span[data-baseweb="tag"],
-    span[data-baseweb="tag"] span,
-    span[data-baseweb="tag"] div {
+
+    /* Rule B — descendants ONLY (note the trailing *) */
+    [data-testid="stMultiSelectTagsContainer"] [data-tag] *,
+    span[data-baseweb="tag"] * {
+        background-color: transparent !important;
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
     }
+
+    /* The remove "x" — targeted by aria-label since it has no stable class */
+    [data-testid="stMultiSelectTagsContainer"] [data-tag] svg,
+    [data-testid="stMultiSelectTagsContainer"] button[aria-label^="Remove"] svg,
+    [aria-label^="Remove"] svg,
     span[data-baseweb="tag"] svg {
         fill: #FFFFFF !important;
         color: #FFFFFF !important;
+    }
+    [data-testid="stMultiSelectTagsContainer"] button[aria-label^="Remove"] {
+        background-color: transparent !important;
+        border: none !important;
     }
 
     /* ── Text & password inputs ─────────────────────────────────────────── */
@@ -2160,7 +2202,7 @@ def render_feedback(q: dict, user_answer: str) -> bool:
     explanation = q.get("explanation", "")
     rule_cite = q.get("rule_citation", "")
     personal = q.get("personal_note", "")
-    pnote = f'<br><strong>📋 From your notes:</strong> {personal}' if personal else ""
+    pnote = f'<br><strong>📋 From RefBuddy Knowledge Base:</strong> {personal}' if personal else ""
     st.markdown(f"""<div class="quiz-explanation">
     <strong>📖 Explanation</strong><br>{explanation}<br><br>
     <strong>📌 Citation:</strong> {rule_cite}{pnote}
@@ -2639,7 +2681,8 @@ with tab_home:
 
     # ── Single chat input — Streamlit pins this to the bottom of the viewport ─
     user_in = st.chat_input(
-        "Ask RefBuddy a question",
+        "Ask RefBuddy a question or upload files using the Upload section "
+        "in the left sidebar",
     )
     if user_in:
         st.session_state.messages.append({
@@ -3621,7 +3664,7 @@ with tab_quiz:
                 </div>""", unsafe_allow_html=True)
                 with st.expander(f"📖 Explanation — Q{a['question_num']}", expanded=False):
                     p = qd.get("personal_note", "")
-                    pnote = f'<br><strong>📋 From your notes:</strong> {p}' if p else ""
+                    pnote = f'<br><strong>📋 From RefBuddy Knowledge Base:</strong> {p}' if p else ""
                     st.markdown(f"""<div class="quiz-explanation">
                     {qd.get("explanation","")}<br><br>
                     <strong>📌 Citation:</strong> {qd.get("rule_citation","")}{pnote}
