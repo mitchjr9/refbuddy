@@ -1943,7 +1943,10 @@ def stream_chat(client, messages, files, system=None):
         else:
             api_msgs.append({"role": m["role"], "content": m["content"]})
     with client.messages.stream(
-        model=MODEL, max_tokens=4096,
+        # 8192 rather than 4096: detailed rules breakdowns with tables and
+        # multi-part enforcement explanations can approach the lower ceiling,
+        # and a truncated answer stops mid-sentence with no warning to the user.
+        model=MODEL, max_tokens=8192,
         system=system_blocks(sys_p), messages=api_msgs, temperature=0,
     ) as s:
         yield from s.text_stream
@@ -1957,14 +1960,103 @@ def call_api_sync(prompt: str, system: str, max_tokens: int = 3000) -> str:
     )
     return resp.content[0].text
 
+def _fmt_ts(raw: str) -> str:
+    """Turn an ISO timestamp into something readable in an exported document."""
+    if not raw:
+        return ""
+    try:
+        return datetime.datetime.fromisoformat(raw).strftime("%b %d, %Y at %I:%M %p")
+    except Exception:
+        return raw[:19]
+
+
 def chat_log_json() -> str:
+    """
+    Full transcript as JSON — every message, both roles.
+
+    NOTE: the model name is deliberately NOT included. It is an implementation
+    detail that means nothing to an official reading the log later.
+    """
+    msgs = st.session_state.get("messages", [])
     return json.dumps({
         "exported_at": datetime.datetime.now().isoformat(),
-        "model": MODEL,
-        "messages": [{"role": m["role"], "content": m["content"],
-                       "timestamp": m.get("timestamp", "")}
-                     for m in st.session_state.messages],
+        "source": "RefBuddy",
+        "message_count": len(msgs),
+        "messages": [
+            {
+                "role": "You" if m["role"] == "user" else "RefBuddy",
+                "timestamp": m.get("timestamp", ""),
+                "content": m["content"],
+            }
+            for m in msgs
+        ],
     }, indent=2, ensure_ascii=False)
+
+
+def chat_log_markdown() -> str:
+    """
+    Transcript as markdown — the shared source for the TXT, PDF and Word
+    exports, so all four downloads contain identical content.
+
+    Questions and answers are paired under numbered headings rather than
+    listed as a flat role/content dump, so the log reads like a study record.
+    """
+    msgs = st.session_state.get("messages", [])
+    out = [
+        "# RefBuddy Chat Log",
+        "",
+        f"Exported: {datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p')}",
+        f"Messages: {len(msgs)}",
+        "",
+        "---",
+        "",
+    ]
+
+    q_num = 0
+    for m in msgs:
+        stamp = _fmt_ts(m.get("timestamp", ""))
+        if m["role"] == "user":
+            q_num += 1
+            out.append(f"## Question {q_num}")
+            if stamp:
+                out.append(f"*{stamp}*")
+            out.append("")
+            out.append(m["content"])
+            out.append("")
+        else:
+            out.append("### RefBuddy Response")
+            if stamp:
+                out.append(f"*{stamp}*")
+            out.append("")
+            out.append(m["content"])
+            out.append("")
+            out.append("---")
+            out.append("")
+
+    out.append("")
+    out.append("*Not official MSHSL interpretation — confirm with your assignor.*")
+    return "\n".join(out)
+
+
+def chat_log_txt() -> str:
+    """Plain-text transcript — markdown syntax stripped for readability."""
+    md = chat_log_markdown()
+    lines = []
+    for line in md.split("\n"):
+        s = line.rstrip()
+        if s.startswith("# "):
+            t = s[2:]
+            lines += [t, "=" * len(t)]
+        elif s.startswith("## "):
+            t = s[3:]
+            lines += ["", t, "-" * len(t)]
+        elif s.startswith("### "):
+            lines += ["", s[4:], ""]
+        elif s == "---":
+            lines.append("_" * 70)
+        else:
+            lines.append(s.replace("**", "").replace("*", ""))
+    return "\n".join(lines)
 
 
 # =============================================================================
@@ -2065,7 +2157,7 @@ def build_vision_content(frames_b64, start_idx, end_idx, user_question,
 
 def stream_vision(client, content_blocks, system):
     with client.messages.stream(
-        model=MODEL, max_tokens=4096, system=system_blocks(system),
+        model=MODEL, max_tokens=8192, system=system_blocks(system),
         messages=[{"role": "user", "content": content_blocks}], temperature=0,
     ) as s:
         yield from s.text_stream
@@ -2579,9 +2671,32 @@ with st.sidebar:
     st.markdown("**Ref Log**")
     if st.session_state.messages:
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        st.download_button("⬇️ Download Chat Log", data=chat_log_json(),
-                           file_name=f"refbuddy_chat_{ts}.json",
-                           mime="application/json", use_container_width=True)
+        _md = chat_log_markdown()
+        st.caption("Download your full chat — questions and answers")
+
+        d1, d2 = st.columns(2)
+        with d1:
+            st.download_button("⬇️ PDF", data=(markdown_to_pdf_bytes(
+                                   _md, "RefBuddy Chat Log") or b""),
+                               file_name=f"refbuddy_chat_{ts}.pdf",
+                               mime="application/pdf",
+                               use_container_width=True, key="dl_pdf")
+            st.download_button("⬇️ TXT", data=chat_log_txt(),
+                               file_name=f"refbuddy_chat_{ts}.txt",
+                               mime="text/plain",
+                               use_container_width=True, key="dl_txt")
+        with d2:
+            _docx = markdown_to_docx_bytes(_md, "RefBuddy Chat Log")
+            if _docx:
+                st.download_button("⬇️ Word", data=_docx,
+                                   file_name=f"refbuddy_chat_{ts}.docx",
+                                   mime=("application/vnd.openxmlformats-"
+                                         "officedocument.wordprocessingml.document"),
+                                   use_container_width=True, key="dl_docx")
+            st.download_button("⬇️ JSON", data=chat_log_json(),
+                               file_name=f"refbuddy_chat_{ts}.json",
+                               mime="application/json",
+                               use_container_width=True, key="dl_json")
     if st.button("🗑️ Clear Home Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
@@ -2676,6 +2791,11 @@ with tab_home:
                         "role": "assistant", "content": full,
                         "timestamp": datetime.datetime.now().isoformat(),
                     })
+                    # The sidebar renders BEFORE this tab, so its download
+                    # buttons were built when only the question existed —
+                    # which is why exported logs were missing every answer.
+                    # Rerun so the sidebar is rebuilt with the full transcript.
+                    st.rerun()
                 except Exception as e:
                     st.error(handle_api_error(e))
 
@@ -2697,8 +2817,7 @@ with tab_home:
         with st.expander("📋 Ref Log — Session Summary", expanded=False):
             st.markdown(f"""<div class="ref-log">
             <strong>Session Stats</strong><br>
-            Messages: {len(st.session_state.messages)} &nbsp;|&nbsp;
-            Model: {MODEL}<br>
+            Messages: {len(st.session_state.messages)}<br>
             Started: {st.session_state.messages[0].get("timestamp","")[:19]}<br>
             Last: {st.session_state.messages[-1].get("timestamp","")[:19]}
             </div>""", unsafe_allow_html=True)
@@ -2709,9 +2828,34 @@ with tab_home:
                 if i < len(st.session_state.messages) - 1:
                     st.markdown("---")
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            st.download_button("⬇️ Save Ref Log", data=chat_log_json(),
-                               file_name=f"refbuddy_reflog_{ts}.json",
-                               mime="application/json")
+            _md = chat_log_markdown()
+            st.markdown("**Download this log**")
+            r1, r2, r3, r4 = st.columns(4)
+            with r1:
+                st.download_button("⬇️ PDF", data=(markdown_to_pdf_bytes(
+                                       _md, "RefBuddy Chat Log") or b""),
+                                   file_name=f"refbuddy_reflog_{ts}.pdf",
+                                   mime="application/pdf",
+                                   use_container_width=True, key="rl_pdf")
+            with r2:
+                _dx = markdown_to_docx_bytes(_md, "RefBuddy Chat Log")
+                if _dx:
+                    st.download_button(
+                        "⬇️ Word", data=_dx,
+                        file_name=f"refbuddy_reflog_{ts}.docx",
+                        mime=("application/vnd.openxmlformats-officedocument"
+                              ".wordprocessingml.document"),
+                        use_container_width=True, key="rl_docx")
+            with r3:
+                st.download_button("⬇️ TXT", data=chat_log_txt(),
+                                   file_name=f"refbuddy_reflog_{ts}.txt",
+                                   mime="text/plain",
+                                   use_container_width=True, key="rl_txt")
+            with r4:
+                st.download_button("⬇️ JSON", data=chat_log_json(),
+                                   file_name=f"refbuddy_reflog_{ts}.json",
+                                   mime="application/json",
+                                   use_container_width=True, key="rl_json")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
