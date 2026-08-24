@@ -1879,6 +1879,48 @@ def b64(data: bytes) -> str:
 # v3.0: model hard-coded to Sonnet — fast, cost-efficient, no user selector needed
 MODEL = "claude-sonnet-4-6"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# SDK COMPATIBILITY SHIM
+#
+# anthropic 1.0.0 removed temperature / top_p / top_k from the typed signatures
+# of messages.create() and messages.stream(). Calling them with temperature= on
+# that version raises:
+#     TypeError: Messages.stream() got an unexpected keyword argument 'temperature'
+#
+# requirements.txt pins anthropic <1.0.0, so this should not trigger. This shim
+# exists so that if the pin is ever relaxed — or a future release moves the
+# parameter again — RefBuddy degrades to the SDK's default sampling instead of
+# crashing on every single request.
+#
+# temperature=0 matters here: this is a rules tool and determinism is the point.
+# If you see the warning below in logs, fix the pin rather than living with it.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _sdk_accepts_temperature() -> bool:
+    """True if the installed anthropic SDK takes temperature as a direct kwarg."""
+    try:
+        import inspect
+        sig = inspect.signature(anthropic.resources.messages.Messages.create)
+        return "temperature" in sig.parameters
+    except Exception:
+        # If introspection fails, assume the classic signature and let the
+        # call itself surface any error.
+        return True
+
+
+_TEMPERATURE_SUPPORTED = _sdk_accepts_temperature()
+
+
+def temp_kwargs(value: float = 0) -> dict:
+    """
+    Sampling kwargs for the installed SDK.
+
+    Returns {"temperature": 0} on 0.x, and {} on any SDK that has dropped the
+    parameter — the request still succeeds, just at the API default.
+    """
+    return {"temperature": value} if _TEMPERATURE_SUPPORTED else {}
+
+
 def make_client():
     """
     Create an Anthropic client.
@@ -1947,7 +1989,7 @@ def stream_chat(client, messages, files, system=None):
         # multi-part enforcement explanations can approach the lower ceiling,
         # and a truncated answer stops mid-sentence with no warning to the user.
         model=MODEL, max_tokens=8192,
-        system=system_blocks(sys_p), messages=api_msgs, temperature=0,
+        system=system_blocks(sys_p), messages=api_msgs, **temp_kwargs(),
     ) as s:
         yield from s.text_stream
 
@@ -1956,7 +1998,7 @@ def call_api_sync(prompt: str, system: str, max_tokens: int = 3000) -> str:
     resp = client.messages.create(
         model=MODEL, max_tokens=max_tokens,
         system=system_blocks(system),
-        messages=[{"role": "user", "content": prompt}], temperature=0,
+        messages=[{"role": "user", "content": prompt}], **temp_kwargs(),
     )
     return resp.content[0].text
 
@@ -2158,7 +2200,7 @@ def build_vision_content(frames_b64, start_idx, end_idx, user_question,
 def stream_vision(client, content_blocks, system):
     with client.messages.stream(
         model=MODEL, max_tokens=8192, system=system_blocks(system),
-        messages=[{"role": "user", "content": content_blocks}], temperature=0,
+        messages=[{"role": "user", "content": content_blocks}], **temp_kwargs(),
     ) as s:
         yield from s.text_stream
 
@@ -2212,7 +2254,7 @@ def generate_single_question(topic: str, used_topics: list = None) -> dict | Non
             model=MODEL, max_tokens=900,
             system=system_blocks(QUIZ_SYSTEM_PROMPT),
             messages=[{"role": "user", "content": prompt}],
-            temperature=0,
+            **temp_kwargs(),
         )
         raw = _strip_json_fences(resp.content[0].text)
         q = json.loads(raw)
@@ -2245,7 +2287,7 @@ def generate_ten_questions(topic: str) -> list | None:
             model=MODEL, max_tokens=6000,
             system=system_blocks(QUIZ_SYSTEM_PROMPT),
             messages=[{"role": "user", "content": prompt}],
-            temperature=0,
+            **temp_kwargs(),
         )
         raw = _strip_json_fences(resp.content[0].text)
         questions = json.loads(raw)

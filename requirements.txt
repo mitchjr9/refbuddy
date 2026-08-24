@@ -1,5 +1,23 @@
-anthropic
-streamlit
-opencv-python-headless
-fpdf2
-python-docx
+# ─────────────────────────────────────────────────────────────────────────────
+# RefBuddy dependencies
+#
+# VERSIONS ARE PINNED ON PURPOSE.
+#
+# On 2026-08-24 a live deploy broke with:
+#     Messages.stream() got an unexpected keyword argument 'temperature'
+#
+# Cause: `anthropic` was unpinned, so a routine Render redeploy pulled the new
+# 1.0.0 major release, which removed temperature/top_p/top_k from the typed
+# signatures of messages.create() and messages.stream(). No code changed on our
+# side — the dependency moved underneath the app and took it down mid-season.
+#
+# Upper bounds below prevent a future major release from doing that again.
+# To upgrade deliberately: raise a bound, test locally, then deploy.
+# ─────────────────────────────────────────────────────────────────────────────
+
+anthropic>=0.39.0,<1.0.0
+streamlit>=1.40.0,<2.0.0
+opencv-python-headless>=4.9.0,<5.0.0
+fpdf2>=2.7.0,<3.0.0
+python-docx>=1.1.0,<2.0.0
+numpy>=1.26.0,<3.0.0
