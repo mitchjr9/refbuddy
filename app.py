@@ -217,7 +217,7 @@ CORE_KNOWLEDGE = """
 
 ---
 
-## 0. 2022–2026 NFHS RULES CHANGES & UPDATES
+## 0. 2022–2027 NFHS RULES CHANGES & UPDATES
 
 > **INSTRUCTION FOR ALL RESPONSES:** Default to the 2021 NFHS Rulebook (Sections 1–8 below) for any question unless a specific update in THIS section overrides it. Always cite the year when a change applies. If a rule changed in 2022 and then was further clarified in 2023, note both years.
 
@@ -325,9 +325,9 @@ CORE_KNOWLEDGE = """
 - **New:** No player participating in the game may wear any audio or video device to record or transmit audio or video.
 - **Why it matters:** New equipment violation — any body camera, GoPro, or similar device worn by a player on the field is illegal. Must be removed before participation. Enforce as illegal equipment.
 
-**[2025] Tooth/Mouth Protector Attachment Restrictions — Rule 1-5-1d(5)a (Effective 2026 season)**
-- **New:** Items attached to the tooth and mouth protector that do not serve a protective function or that pose a health/risk issue are not allowed.
-- **Why it matters:** Flavored candy attachments, decorative items on mouthguards = illegal starting 2026.
+**[2025] Tooth/Mouth Protector Attachment Restrictions — Rule 1-5-1d(5)a(4),(5) (Effective 2026 season)**
+- **New:** Items attached to the tooth and mouth protector that do not serve a protective function, or that pose a health/risk issue to the wearer or others, are not allowed. The mouthguard must be entirely plain.
+- **Why it matters:** Specifically illegal starting 2026 — pacifier-style covers, decorative "bling," flavored candy attachments, and commercial messaging. Equipment check item; the player fixes it or does not participate.
 
 **2025 Points of Emphasis (Official — Final 2/18/25):**
 1. **Illegal and Improperly Worn Player Equipment** — Illegal = prohibited items (jewelry, tinted visor, non-compliant eyeshade, bands on arm/neck/legs, back pads uncovered, non-conforming towels). Improperly worn = legal equipment not worn as designed (pants not covering knees, mouthguard not in at snap start, shoulder pads not covered by jersey). Player removed for one down for improperly worn equipment. Chronic violations = delay-of-game or USC on head coach.
@@ -343,21 +343,39 @@ CORE_KNOWLEDGE = """
 - **New:** Play cards may now also be worn on the belt area of the body.
 - **Why it matters:** Equipment check item — both locations now legal. No penalty for cards worn on the belt.
 
-**[2026] Slap to Head — NEW Personal Foul — Rule 9-4-7 (NEW)**
-- **Old:** No specific rule against using hands to slap an opponent's head (covered under general illegal use of hands provisions).
-- **New:** No player may use hand(s) to slap an opponent's head. This is a new, specific 15-yard personal foul.
-- **Why it matters:** Now a distinct and named foul — not just "illegal use of hands." If you see a player slap an opponent's helmet, it's Rule 9-4-7, 15 yards. Flag it immediately. Does not require twist or pull like facemask — any slap to the head is the foul.
+**[2026] Slap to Head — EXPANDED to All Players — Rule 9-4-7**
+- **Old (2021 book):** Rule 9-4-7 already existed but applied to the DEFENSE only — "No defensive player may use the hand(s) to slap the blocker's head." 15-yard personal foul.
+- **New (2026):** The restriction now applies EQUALLY TO ALL PLAYERS, explicitly covering both offense and defense, and to any opponent's head — not just a blocker's. Still a 15-yard personal foul.
+- **Why it matters:** The common misreading is that this is a brand-new foul. It is not — it is an expansion of scope. The practical change is that an OFFENSIVE player slapping a defender's head is now a foul, where under the old wording it was not covered by 9-4-7. Does not require a twist or pull like a facemask; any slap to the head is the foul.
 
 **[2026] Enforcement on Subsequent Kickoff → Succeeding Spot — Rules 8-2-2 through 8-2-5 (editorial)**
 - **Old:** A live-ball foul by the defense on a scoring play was enforced on the try or the ensuing kickoff.
 - **New:** Enforcement moves to the succeeding spot.
 - **Why it matters:** Practical effect flagged at the GSOA 2026 preseason meeting — a defensive pass interference at the end of regulation can now be enforced in overtime, giving the offense 1st and 10 from the 25 rather than 1st and goal from the 10. Know this before you need it; it comes up in a chaotic moment.
 
+**[2026] Delay of Game Signal Changed — Official Signal #21**
+- **Old:** Delay of game was signalled with a generic arm tap.
+- **New:** Signal #21 is now **folded / crossed arms in front of the body**.
+- **Why it matters:** Pure mechanics — no rule or penalty change, but you will look out of step with the crew and the press box if you use the old signal. Worth 30 seconds in pre-game so the whole crew is consistent.
+
 **2026 Points of Emphasis:**
 1. **Flagrant and Unsportsmanlike Fouls** — Consistent enforcement. Flagrant fouls = DQ. No tolerance for taunting or postgame confrontations.
 2. **Helping the Runner** — Pushing/pulling the runner by a teammate is illegal. Watch for OL pulling QB over the pile on short yardage.
 3. **Sideline Management and Control** — Coaches' restricted area enforcement. Team box limits (MSHSL: 15-yard lines). Non-players must stay in the team box.
 4. **Identification of the NFHS Authenticating Mark on Game Balls** — Verify the authenticating mark on all game balls before the game, especially at 9th grade and above (Rule 1-3-1). Balls without the mark are not legal for varsity competition.
+
+---
+
+### 2027 Rule Changes (announced — effective with the 2027 season)
+
+**[2027] Arm Sleeve Specifications — Rules 1-5-2d (NEW), 1-5-3c(6)**
+- **Old:** No third-party performance specification existed for football arm sleeves. Rule 1-5-3c(5) prohibited sleeves "manufactured to enhance contact," but with no certification standard to test against.
+- **New:** SFIA (Sports and Fitness Industry Association), working with manufacturers and the NFHS, has published arm sleeve performance specifications effective with the 2027 season. These align closely with the existing football glove rules.
+  - **Scope:** ALL arm sleeves — separate/unattached sleeves and sleeves attached to a shirt.
+  - **Requirement:** Any sleeve manufactured to enhance contact with the ball or an opponent must meet the SFIA specification at the time of manufacture.
+  - **Labeling:** Compliant sleeves must carry a permanent, clearly visible, legible exact replica of the official SFIA arm sleeve seal on the exterior.
+  - **Exempt:** Plain arm coverings made without grip-enhancing components do not need the certification.
+- **Why it matters:** This mirrors how gloves already work — look for the seal. Starting in 2027 an equipment check on sleeves is a seal check, not a judgment call about grippiness. NOT yet in effect for 2026; do not enforce it this season.
 
 ---
 
@@ -379,8 +397,11 @@ CORE_KNOWLEDGE = """
 | 1-5-3c(2) | 2025 | Electronic play signs (non-audio/video) allowed |
 | 1-5-3c(3) | 2025 | No audio/video recording devices on players |
 | 1-5-3c(9) | 2026 | Play cards now allowed on belt area in addition to wrist |
-| 9-4-7 | 2026 | Slap to opponent's head = new 15-yard personal foul |
+| 9-4-7 | 2026 | Slap to head expanded from defense-only to ALL players |
 | 8-2-2 to 8-2-5 | 2026 | Enforcement on subsequent kickoff moves to succeeding spot |
+| Signal #21 | 2026 | Delay of game signal is now folded/crossed arms |
+| 1-5-1d(5)a | 2026 | Mouthguards must be entirely plain — no bling, covers or messaging |
+| 1-5-2d, 1-5-3c(6) | 2027 | Arm sleeves that enhance contact must carry the SFIA seal |
 
 ---
 
