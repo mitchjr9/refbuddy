@@ -815,6 +815,43 @@ So "a punt may be used as a free kick following a fair catch" is FALSE.
 
 ---
 
+## 5F. SCRIMMAGE NOTES — 8/29/26 (most recent field session)
+
+### Reporting penalties to the Referee — use this order every time
+
+1. **Type of foul**
+2. **Number of the player**
+3. **Team of the player**
+4. **Result of the play**
+5. **Clock status** — this one is KEY FOR THE BACK JUDGE and is the step most often dropped
+
+Say it in that sequence so the Referee can announce it without asking follow-ups.
+
+### Back Judge — general
+
+- **Play going out of bounds:** hustle to the players, especially if anyone ends up in the opposing
+  team's bench area. Get them out of there as fast as possible before it escalates.
+- **Pass interference:** when reporting, state whether the result of the play was a catch or no catch.
+- **Timeout on the field:** line up with the Referee, mirroring him on the other side of the field.
+  Do NOT leave your position. Time the timeout yourself — one minute, with a heads-up at 15 seconds.
+- **Counting the defense:** make eye contact with the LOS officials while counting to 11 so the whole
+  crew confirms the same count before the snap.
+- **Beanbag discipline:** do NOT beanbag an interception or a muffed punt. (Refines the general
+  beanbag guidance elsewhere in these notes — the beanbag marks a fumble spot and the end of a kick,
+  not every change of possession.)
+- **Duplicate flags:** if you have the same foul as an LOS official or another crew member, bring the
+  flags close together to signal it is one foul, not two.
+
+### Back Judge — extra points and field goals
+
+1. Cadence when the kick is **GOOD**: "1, 2, Ready, Up"
+2. Cadence when the kick is **NO GOOD**: "1, 2, Ready," then two pumps showing no good
+3. Line up **in line with the post**, behind the goal posts
+4. The kick must pass **through** the uprights — **not over** an upright as in college or the NFL.
+   This is an NFHS/NCAA difference worth knowing cold; the ball must be entirely inside the upright.
+
+---
+
 ## 6. LMAA YOUTH LEAGUE RULES
 
 **7th & 8th Grade**: 1 player in motion; trips allowed; kick from 40; receiving team 5 players past 45. No blitzing = 10-yard penalty + automatic first down.
@@ -831,7 +868,7 @@ So "a punt may be used as a free kick following a fair catch" is FALSE.
 
 **2026**: Play cards on forearm/wrist AND belt [1-5-3c(9)]. Slap to head = 15 yards [9-4-7 NEW]. POE: Flagrant/USC fouls; Helping the runner; Sideline management; NFHS Authenticating Mark on balls.
 
-**Key NFHS vs. NCAA**: 12 players: NFHS 15yds vs NCAA 5yds. Touchback: NFHS 20yd vs NCAA 25yd. Fair catch: NFHS may kick or snap vs NCAA must snap. Targeting: NFHS not auto-DQ vs NCAA auto-DQ. OT: NFHS B-10 vs NCAA B-25. Intentional grounding: NFHS outside-pocket exception (snap receiver only, ball reaches LOS) vs NCAA outside pocket legal for any passer. K free kick line: NFHS 40yd vs NCAA 35yd. Pop-up kick: NFHS illegal vs NCAA legal.
+**Key NFHS vs. NCAA**: 12 players: NFHS 15yds vs NCAA 5yds. Touchback: NFHS 20yd vs NCAA 25yd. Fair catch: NFHS may kick or snap vs NCAA must snap. Targeting: NFHS not auto-DQ vs NCAA auto-DQ. OT: NFHS B-10 vs NCAA B-25. Intentional grounding: NFHS outside-pocket exception (snap receiver only, ball reaches LOS) vs NCAA outside pocket legal for any passer. K free kick line: NFHS 40yd vs NCAA 35yd. Pop-up kick: NFHS illegal vs NCAA legal. FG uprights: NFHS ball must pass THROUGH/inside the uprights vs NCAA/NFL where a kick over the top of an upright is good.
 
 ---
 
