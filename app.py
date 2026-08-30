@@ -354,9 +354,9 @@ CORE_KNOWLEDGE = """
 - **Why it matters:** Practical effect flagged at the GSOA 2026 preseason meeting — a defensive pass interference at the end of regulation can now be enforced in overtime, giving the offense 1st and 10 from the 25 rather than 1st and goal from the 10. Know this before you need it; it comes up in a chaotic moment.
 
 **[2026] Delay of Game Signal Changed — Official Signal #21**
-- **Old:** Delay of game was signalled with a generic arm tap.
-- **New:** Signal #21 is now **folded / crossed arms in front of the body**.
-- **Why it matters:** Pure mechanics — no rule or penalty change, but you will look out of step with the crew and the press box if you use the old signal. Worth 30 seconds in pre-game so the whole crew is consistent.
+- **Old:** Fists **crossed at the chest**.
+- **New:** Both arms **extended and crossed in front of the body, palms facing down**.
+- **Why it matters:** Pure mechanics — no rule or penalty change — but the old signal is now incorrect and you will look out of step with the crew and press box. Worth 30 seconds in pre-game so everyone matches.
 
 **2026 Points of Emphasis:**
 1. **Flagrant and Unsportsmanlike Fouls** — Consistent enforcement. Flagrant fouls = DQ. No tolerance for taunting or postgame confrontations.
@@ -849,6 +849,132 @@ Say it in that sequence so the Referee can announce it without asking follow-ups
 3. Line up **in line with the post**, behind the goal posts
 4. The kick must pass **through** the uprights — **not over** an upright as in college or the NFL.
    This is an NFHS/NCAA difference worth knowing cold; the ball must be entirely inside the upright.
+
+---
+
+## 5G. 2026 MSHSL/NFHS FOOTBALL RULES MODULE (official annual module)
+
+### Rules changes covered in the module
+- **Play cards — Rule 1-5-3c(9):** Illegal equipment includes "play cards not worn on the wrist, arm or belt." A card worn on the belt is LEGAL.
+- **Head slap — Rule 9-4-7:** "No player may use the hand(s) to slap the opponent's head." Applies to all players, offense and defense.
+
+### Editorial changes
+- **Game ending / officials' jurisdiction — Rule 1-1-8:** Officials' authority extends through the referee's declaration of the end of the fourth period or overtime. Jurisdiction terminates and the final score is approved when **all** officials leave the visual confines of the playing area. Officials retain **clerical** authority through completion of any reports, including disqualification reports, responsive to actions that occurred while they had jurisdiction. State associations may intercede for unusual incidents before, during or after jurisdiction, or if a game is terminated before the end of regulation.
+- **Defenseless receiver — Rule 9-4-3p:** No player or nonplayer shall initiate forceful contact against a defenseless receiver (per 2-32-16b, c, e) that is not (1) incidental contact as a result of making a play on the ball, (2) initiated with open hands, or (3) an attempt to tackle by wrapping arm(s) around the receiver.
+- **Basic spot — Rule 10-4-4a:** The basic spot is the **spot of the foul** for illegal batting or illegal kicking by A that occurs **behind** the basic spot. Module example: Team A run beyond the LOS and beyond the spot of the foul; A's illegal batting/kicking foul occurs behind the end of the run; enforce from the spot of the foul.
+- **2026 editorial change list:** 1-3-5b and 5-3-2 — "Head Linesman" changed to "Head Line Judge." 1-5-3a(2) — deleted the reference to "opponent." 2-15-1 — clarified for consistency with the 2025 forward fumble rule. 3-5-7g — "heat and humidity" replaced with "circumstances and conditions." 4-1-3 — deleted "if elected." 5-3-1 — added "ball being" before ready-for-play. 8-2-2 through 8-2-5 — "subsequent kickoff" changed to "succeeding spot."
+
+### Overtime procedure (MSHSL)
+- **Chains are now used in OT** if penalty enforcement would produce 1st and 10 **outside** the 10-yard line. Applies both to penalties enforced to start OT and to situations arising during OT — e.g. a QB sack followed by roughing the passer from the 25.
+
+### Equipment rulings confirmed permissible for 2026
+- **Helmet covers** — Guardian Caps and SAFR Pro Tech are permissible. Treat them as part of the helmet: a player tackled by the Guardian Cap/helmet is a legal play, not a helmet-opening or facemask foul.
+- **Q-Collar** — permissible.
+- **NeuroGuard+ mouthguards** — permissible.
+- **Tooth/mouth protector — Rule 1-5-1d(5)a-4:** effective 2026, no attachments that do not serve a protective purpose. Module examples of ILLEGAL: dangling chain; dangling chain with a charm.
+- **Eyeshields — Rule 1-5-3c:** illegal if not molded rigid material, or if not clear without any tint. **A doctor's note does not permit a tinted shield.**
+- **Jerseys — Rule 1-5-1b(1):** a jersey longer than the top of the pants must be tucked in; an undershirt showing below the jersey must be tucked in. Send the player out until the equipment is legal.
+- **Improperly worn equipment** — legal equipment not worn as intended: pants not covering the knees, mouth protector not in the mouth as play starts, shoulder pads not covered by the jersey. Player is replaced for one down.
+- **Illegal equipment** — jewelry, tinted visors, non-compliant eye shade, bands around the upper arm/neck/legs, non-conforming towels. Umpire typically makes this call.
+- Head coach must verify before each game that all players are properly and legally equipped; allowing illegal or improperly worn equipment can subject the coach to a penalty.
+
+### MSHSL uniform rules
+- Home jerseys must be a **dark** color — use the darkest of the school's colors.
+- Home **number body must be light**, white strongly recommended; the number may not be darker than the jersey.
+- Visiting jerseys must be **white** with a **dark** number body.
+- Trim/outline on numbers is optional and does not affect legality.
+- Contrast checker: https://projects.tssaa.org/nfhs/contrast/index.html?min=3
+
+### 2026 NFHS Points of Emphasis — detail
+1. **Flagrant and unsportsmanlike fouls.** A flagrant foul is so severe or extreme that it places an opponent in danger of serious injury, and/or involves extremely or persistently vulgar or abusive conduct — intentional, reckless or excessively violent behavior showing clear disregard for safety. Examples: fighting, maliciously targeting the head/neck, striking an opponent, a violent illegal blindside block or late hit. **Disqualification if any foul is judged flagrant.** Unsportsmanlike fouls are **non-contact** fouls against fair play: taunting, threatening gestures or posturing, racist comments, trash talking, excessive or choreographed celebrations, aggressively spiking/spinning/throwing the ball high, profanity, spitting, arguing with officials, throwing equipment.
+2. **Helping the runner.** Pushing the pile is legal. Direct contact to push, pull or lift the runner to assist forward progress is not. Watch especially on short yardage near the goal line and the line to gain.
+3. **Sideline management and control.** Non-players must stay in the team box and out of restricted areas, especially while the ball is live. The coaches' area is a minimum 2-yard belt between the front of the team box and the sideline, and becomes the restricted area when the ball is live. Maximum three coaches — only coaches — in that area when the ball is dead between plays. **Escalation:** if an official has to run around someone, warning first, then 5 yards next time, then 15 yards for a third. If an official **runs into** a person, that is a 15-yard personal foul that counts toward ejection. **In Minnesota the team box extends to the 15-yard line** — a coach stepping to the 13 should be penalized.
+4. **NFHS Authenticating Mark on game balls.** All balls for which NFHS writes playing rules must display the mark. Old mark: circular text "Meets • NFHS • Rule • Specifications." Current mark: NFHS shield logo with NFHS wordmark. **Back Judge validates game balls — check for the NFHS wordmark.**
+
+### 2026 & 2027 Game Officials Manual Points of Emphasis
+1. Penalty communication  2. Forward progress  3. Free-kick coverage
+
+### Crew of five — free kick positions
+- **Referee:** on the goal line, between the hash marks, center of the field. Wait until the goal line is no longer threatened, then move upfield.
+- **Umpire:** outside the sideline **opposite the chains**, on Team R's free-kick line. Wait for K to cross your face, then move onto the field.
+- **Wing officials:** on Team R's goal line extended, adjustable based on the deepest receiver. If adjusted, **both LOS officials must be on the same yard line** and deeper than the deepest receiver.
+- **Back Judge:** outside the sideline **on the chains side**, on Team K's free-kick line. Wait for K to cross your face, then move onto the field.
+- **Onside kicks** are especially challenging: kick legality, the free-kick lines, first touching by K, and player contact — who initiated it and whether it was legal — all have to be judged fast.
+
+### Crew of five — scoring kick (FG/Try) positions
+- **Referee:** 2–3 yards to the rear and 3–5 yards to the side of the potential kicker, facing the holder.
+- **Umpire:** beyond the end line, behind the upright.
+- **Wing officials:** straddling the line of scrimmage.
+- **Back Judge:** beyond the end line, behind the upright.
+- **Field goal by free kick** (Rules 6-1-1a, 8-4-1a): chains are set to establish the 10-yard neutral zone; Referee behind the upright; Umpire behind the upright and rules on the crossbar; both determine whether the kick is successful. All other mechanics are the same as a kickoff.
+
+### Kickoff coverage detail
+- **LJ** releases at the snap; primarily responsible for blocks during the kick and return; has the returner if the ball is in their third.
+- **BJ — stay deep.** Toward the chains side, 5–7 yards behind the returner and 5 yards to the side. Split two returners at 7 yards deep. Has the return player in their two-thirds. Once the player has the ball and is heading upfield, strictly responsible for blocks.
+- Don't ball watch. Everyone diligent on safety fouls.
+
+### LOS mechanics
+- Down Judge and Line Judge — **stay home.** Switch sidelines at halftime. Don't guard air — look for work. Need to see low blocks.
+
+### Umpire mechanics
+- Watch alignment. **Cross your face** — primary responsibility for the QB in the side zone; when he crosses your face and is a threat to be fouled, move your vision to the passer. Manage the game. Blocking responsibility: tackle, guard, center (the Referee has the guard and tackle on their side).
+
+### Scrimmage-kick mechanics (R/U)
+- 3–4 yards behind the punter. General awareness of the free-blocking zone. If the kicker is roughed, you need to have eyes on it. Once the ball is kicked, zone up and take your side of the field. If the ball goes out of bounds in the air, the Referee lines up the Back Judge or Line Judge — if a chop-in is needed, the BJ runs up with a hand raised and the R chops.
+
+### Offensive holding — MIBT ("Make It Big Time")
+Ask three questions:
+1. **Point of attack?**
+2. **Material restriction?**
+3. **Category?** — tackle, takedown, or grab-and-restrict.
+
+If you can answer yes to the first two and name a category, you have enough for a foul.
+
+### Targeting
+- There does **NOT** have to be a "launch" for targeting, and the contact above the shoulders does **not** have to be made with the helmet — it can be a shoulder, forearm, etc.
+- The rule: no player or nonplayer shall target an opponent. A player may not take aim or launch at another player's head or neck area.
+- **Targeting is NOT an automatic ejection in high school.** Eject only if the contact is flagrant. 15-yard penalty.
+- If contact is high it could be targeting or excessive contact — same penalty either way.
+- **Spearing** = contact made leading with the head, but not to the opponent's head or neck area.
+
+### Risk minimization
+- Unnecessary or excessive contact is illegal **whether or not the block or tackle is otherwise legal.**
+- Taking aim at opponents who are unaware of impending contact or are completely out of the play must be eliminated. Illegal, and ejection if flagrant.
+- Situations to watch: blind-side blocks, peel-back blocks, and receivers — including defenders and punt receivers. Illegal if contact is not made with open hands or as a wrap-up tackle **when the player is defenseless.**
+- **When in doubt, make this call.**
+
+### Minnesota mechanics reminders
+- Communicate with timers before the game; dead-ball clock situations written down.
+- All officials meet with the head coach before the game.
+- LOS officials switch sidelines at halftime.
+- Umpire in the offensive backfield except on FG/Try.
+- **No visible play clock signal from the Back Judge if there is a digital play clock.**
+- **Coin toss:** conducted on the **home team sideline at the 50-yard line, 30 minutes prior to kickoff.** Rationale — safety, since teams are still warming up at both ends of the field, and consistency with state quarterfinal procedure.
+- **Seven-person mechanics** approved for semifinals and finals in 2026.
+- **Pregame:** on the field at least **35 minutes** before kick. Pregame starts earlier in the week. Several tasks in that 35-minute window — don't stand around.
+
+### Dead-ball officiating
+- Dead-ball periods are not a break. Diligently observe players. Use your voice, have a physical presence, penalize as necessary.
+- **Two unsportsmanlike fouls or one flagrant foul results in ejection.** A dead-ball unsportsmanlike (e.g. a celebration) counts toward ejection.
+
+### Clock awareness
+- Factors affecting time remaining: score, field position, available timeouts, injury and penalty timing.
+- Know when the play clock is 25 vs 40 seconds.
+- Place the ball efficiently and start the game clock on first downs in the field of play.
+
+### Weather and water breaks
+- If it is hot and humid, officials **can and are encouraged to** declare water breaks. **No agreement from the coaches is required.** Take them at natural breaks — change of possession or scores.
+
+### Coaches and official warnings (MSHSL)
+- **Head coach only** may give feedback to officials. Assistant coaches work through the head coach. The head coach is responsible for, and subject to a flag for, the behavior of the bench area. The head coach must attend the pregame conference. If a team has co-head coaches, only one is designated to speak with officials.
+- **Official warning procedure** — when coaches continue to disregard the team box or disrespect officials: **STOP PLAY**, tell the coach "You have been warned," and record the warning on the game card with the time and the team/coach.
+- **No further warnings.** The next issue is a UNS flag. A warning is not required before flagging a coach. A UNS flag has the same effect as a warning, and no warning is given prior to ejection.
+- **No tolerance for profanity** — no warning, automatic UNS flag.
+- **Set the tone early.** Contest reports too often say "I should have flagged the coach." Support each other by taking action or the problem grows each game. Stay calm regardless of coach behavior and de-escalate.
+
+### Officials' uniform (2026)
+- The **new Smitty shirts are required in all varsity contests.** All officials on a crew should wear the same shirt style. Available from any Smitty dealer.
+- **No jacket during the game** — if it is cold, wear warm layers under the long-sleeve shirt.
 
 ---
 
