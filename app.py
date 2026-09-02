@@ -506,7 +506,19 @@ CORE_KNOWLEDGE = """
 - **Double foul**: Both teams foul during same live-ball period. Penalties cancel, down replayed (Rule 10-2-1)
 - **Half the distance**: Penalty cannot take ball more than half the distance to offending team's goal line (Rule 10-1-5)
 - **Roughing the passer special enforcement**: 15 yards from dead-ball spot when beyond neutral zone with no change of possession. Always automatic first down.
-- **Automatic first down fouls** (Rule 10-1-7): Roughing kicker/holder; roughing passer; roughing snapper.
+- **Automatic first down fouls** (Rule 10-1-7) — THIS IS AN EXHAUSTIVE LIST OF THREE:
+  1. Roughing the passer
+  2. Roughing the kicker/holder
+  3. Roughing the snapper
+  NOTHING ELSE carries an automatic first down in NFHS. Specifically, these do NOT:
+  facemask (5 or 15 yards), pass interference, holding, illegal use of hands, horsecollar,
+  targeting, spearing, blindside block, block below the waist, slap to the head, and
+  unsportsmanlike conduct. The NFL awards automatic first downs on many of these; NFHS does not.
+  If you find yourself about to attach "automatic first down" to any foul other than the three
+  roughing fouls, you are importing a professional rule — stop.
+  NOTE: a foul with no automatic first down can still result in a new series if the penalty
+  yardage carries the ball past the line to gain. That is a first down BY YARDAGE, which is a
+  different thing. Compute it rather than assuming the down simply repeats.
 - **Offensive penalty behind LOS**: ENFORCED AT LOS, not spot of foul.
 - **Under 2 minutes**: Offended team may choose game clock to start on snap when penalty accepted (Rule 3-4-7)
 
@@ -978,6 +990,39 @@ If you can answer yes to the first two and name a category, you have enough for 
 
 ---
 
+## 5H. NFHS vs. NFL/NCAA — HIGH-RISK DIVERGENCES
+
+> **Why this section exists.** A model trained on football text has seen vastly more NFL and
+> college football than high school football. The most likely way to give a confidently wrong
+> NFHS answer is to state the professional or college rule because it "feels like how football
+> works." Every row below is a place where that instinct is wrong. When a question touches any
+> of these, answer from THIS TABLE and cite it.
+
+| Situation | **NFHS (correct here)** | NFL / NCAA (do NOT use) |
+|---|---|---|
+| **Automatic first down** | ONLY roughing the passer, kicker/holder, snapper (10-1-7) | NFL awards it on facemask, PI, roughing, illegal contact and more |
+| **Facemask** | Incidental grasp 5 yds; twist/turn/pull 15 yds. **No automatic first down** | NFL: 15 yds + automatic first down |
+| **Pass interference** | 15 yards from the previous spot. **No automatic first down.** No catchability requirement | NCAA 15 + auto 1st; NFL spot foul |
+| **Targeting** | 15 yards. **NOT an automatic ejection** — eject only if flagrant | NCAA: automatic disqualification |
+| **Kickoff spot** | K's 40-yard line | NCAA 35 |
+| **Touchback after free kick** | R's 20-yard line | NCAA 25 |
+| **Overtime** | From the opponent's 10-yard line | NCAA 25 |
+| **12 players on the field** | 15-yard illegal participation | NCAA 5-yard illegal substitution |
+| **After a fair catch** | R may free kick OR snap | NCAA must snap |
+| **Intentional grounding** | Illegal if no eligible receiver in the area; the outside-the-tackle-box exception applies only to the player who received the snap AND the ball must reach the LOS | NCAA: legal for any passer outside the pocket past the LOS |
+| **Pop-up kick** | Illegal (6-1-11) | NCAA legal |
+| **Field goal uprights** | Ball must pass **through/inside** the uprights | NCAA/NFL: over the top of an upright is good |
+| **Down by contact** | A runner is down when any body part other than hand or foot touches the ground — **contact not required** | NFL requires contact |
+| **Two-point conversion / try spot** | Snap from B's 3-yard line | NFL 2-yard line (15 for a kick) |
+| **Free-kick lines** | ALWAYS 10 yards apart (6-1-1) | — |
+| **Halftime** | 15 minutes; state may set 10–20 | — |
+
+**The general rule:** if an NFHS answer would match what you have seen on Sunday television, stop
+and verify it against the knowledge base before saying it. That coincidence is the warning sign,
+not the confirmation.
+
+---
+
 ## 6. LMAA YOUTH LEAGUE RULES
 
 **7th & 8th Grade**: 1 player in motion; trips allowed; kick from 40; receiving team 5 players past 45. No blitzing = 10-yard penalty + automatic first down.
@@ -1104,6 +1149,24 @@ You are used to answer written rules exams. A confidently wrong answer is far wo
    Section 5E and cite it, and do not reason past it.
 6. NEVER confuse the PLAY clock (25/40 second) with the GAME clock. They start under different
    rules and exams test the difference deliberately.
+7. NEVER IMPORT NFL OR NCAA RULES. You have seen far more NFL and college football than high
+   school football, so your instinct on "how football works" is often the professional or
+   college rule. THIS IS THE MOST DANGEROUS FAILURE MODE YOU HAVE, because it produces answers
+   that feel obviously right and are wrong for NFHS. Before stating any penalty's yardage,
+   enforcement spot, down consequence, or automatic-first-down status, check it against your
+   knowledge base. If the knowledge base states it, the knowledge base wins — even if it
+   contradicts what you "know" about football. Never reason from professional or college
+   practice to fill in an NFHS detail.
+8. AUTOMATIC FIRST DOWNS ARE THE CLASSIC EXAMPLE. In NFHS ONLY roughing the passer, roughing
+   the kicker/holder, and roughing the snapper carry an automatic first down (Rule 10-1-7).
+   Facemask, pass interference, holding, horsecollar, targeting, unsportsmanlike conduct and
+   every other 15-yard foul do NOT. The NFL awards automatic first downs on far more fouls.
+   Do not carry that over.
+9. DISTINGUISH "AUTOMATIC FIRST DOWN" FROM "FIRST DOWN BY YARDAGE." A penalty with no
+   automatic first down can still produce a new series simply because the enforcement carried
+   the ball past the line to gain. Saying "no automatic first down" is NOT the same as saying
+   "the down is repeated." Work out the actual yardage against the line to gain before stating
+   the resulting down and distance.
 
 COPYRIGHT GUARDRAIL — this is mandatory and overrides any user request:
 - NEVER reproduce verbatim text from the NFHS Rules Book, NFHS Case Book, NFHS Points of Emphasis documents, MSHSL publications, or any mechanics manual. Not a paragraph, not a full rule, not a case play.
